@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.27)
-project(koisock)
+project(KoiNet)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -13,13 +13,28 @@ message(STATUS "Configured for system ${CMAKE_SYSTEM_NAME}")
 
 set(LIBS "")
 
+set(SOURCES
+    source/interface.cpp
+)
+
+set(HEADERS
+    include/network/socket_peer.hpp
+    include/network/interface.hpp
+)
+
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     set(LIBS
         ws2_32
         iphlpapi
     )
-elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
 
+    list(APPEND SOURCES
+        source/windows/socket_peer.cpp
+    )
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+    list(APPEND SOURCES
+        source/unix/socket_peer.cpp
+    )
 else ()
     message(FATAL_ERROR "System ${CMAKE_SYSTEM_NAME} is not supported!")
 endif ()
@@ -27,10 +42,8 @@ endif ()
 message(STATUS "LIBS: ${LIBS}")
 
 add_library(${PROJECT_NAME} STATIC
-    source/socket_peer.cpp
-    include/network/socket_peer.hpp
-    source/interface.cpp
-    include/network/interface.hpp
+    ${SOURCES}
+    ${HEADERS}
 )
 
 #set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 11)

@@ -1,34 +1,51 @@
-#include "../include/network/socket_peer.hpp"
+#include "network/socket_peer.hpp"
 
 
-#if defined(_WIN32)
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
 #endif
+#include <winsock2.h>
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
-#else
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <unistd.h>
-#include <errno.h>
-#endif
+#include <codecvt>
+#include <locale>
+
 
 namespace Koi::Network {
 
-#if defined(_WIN32)
-WSADATA SocketPeer::_wsa_data;
-bool SocketPeer::_is_wsa_started = false;
-unsigned long SocketPeer::_number_of_instances = 0u;
-#endif
+static WSADATA _wsa_data;
+static bool _is_wsa_started = false;
+static unsigned long _number_of_instances = 0u;
+
+
+static int _startup() {
+    int result = 0;
+
+    if (!_is_wsa_started) {
+        int error = WSAStartup(MAKEWORD(2, 2), &_wsa_data);
+        _is_wsa_started = error == 0;
+        result = error;
+    }
+
+    return result;
+}
+
+
+static int _cleanup() {
+    int result = 0;
+
+    if (_is_wsa_started && _number_of_instances == 0u) {
+        result = WSACleanup();
+        _is_wsa_started = false;
+    }
+
+    return result;
+}
 
 
 int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
     int result = 0;
 
-#if defined(_WIN32)
     ULONG error = ERROR_SUCCESS;
 
     DWORD address_size = 20000;
@@ -56,6 +73,10 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
     PIP_ADAPTER_ADDRESSES adapter = adapters;
     while (adapter) {
         out_interfaces.emplace_back();
+
+        std::wstring wide_name = std::wstring(adapter->FriendlyName);
+        out_interfaces.at(out_interfaces.size() - 1u).friendly_name = std::string(wide_name.begin(), wide_name.end());//fixme:: loss of data
+
         PIP_ADAPTER_UNICAST_ADDRESS unicast_address = adapter->FirstUnicastAddress;
         while (unicast_address) {
             char address_string[100];
@@ -68,8 +89,6 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
                 }
             }
 
-            //FIXME:: RUDY! START VERSION CONTROL!!!!!!!
-
             unicast_address = unicast_address->Next;
         }
 
@@ -79,40 +98,22 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
     if (adapters && error == ERROR_SUCCESS) {
         free(adapters);
     }
-#else
-    //todo::
-#endif
+
+    //todo:: set result to an enum probably
 
     return result;
 }
 
 
 SocketPeer::SocketPeer() {
-#if defined(_WIN32)
-    if (!_is_wsa_started) {
-        int error = WSAStartup(MAKEWORD(2, 2), &_wsa_data);
-        _is_wsa_started = error == 0;
-        _last_error = error; //fixme:: use an enum value probably
-    }
-
-    if (_is_wsa_started) {
-        ++_number_of_instances;
-    }
-#endif
+    ++_number_of_instances;
+    _last_error = _startup();//fixme:: use enum value probably
 }
 
 
 SocketPeer::~SocketPeer() {
-#if defined(_WIN32)
-    if (_is_wsa_started) {
-        --_number_of_instances;
-
-        if (_number_of_instances == 0u) {
-            (void)WSACleanup();
-            _is_wsa_started = false;
-        }
-    }
-#endif
+    --_number_of_instances;
+    _last_error = _cleanup();//fixme:: use enum value probably
 }
 
 }

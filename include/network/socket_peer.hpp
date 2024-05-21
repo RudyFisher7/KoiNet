@@ -4,8 +4,6 @@
 
 #include "network/interface.hpp"
 
-#include <winsock2.h>
-
 #include <string>
 #include <vector>
 
@@ -18,12 +16,6 @@ public:
 
 
 private:
-#if defined(_WIN32)
-    static WSADATA _wsa_data;
-    static bool _is_wsa_started;
-    static unsigned long _number_of_instances;
-#endif
-
     int _last_error = 0;
 
 
