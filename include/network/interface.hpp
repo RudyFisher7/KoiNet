@@ -17,6 +17,7 @@ public:
     std::string friendly_name;
     std::string ipv_4_unicast_address;
     std::string ipv_6_unicast_address;
+
 };
 
 std::ostream& operator<<(std::ostream& lhs, const Interface& rhs);

@@ -15,6 +15,7 @@ set(LIBS "")
 
 set(SOURCES
     source/interface.cpp
+    source/common/socket_peer.cpp
 )
 
 set(HEADERS

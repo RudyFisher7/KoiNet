@@ -43,11 +43,13 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
 }
 
 
-SocketPeer::SocketPeer() {
+void SocketPeer::_startup() {
+    ++_number_of_instances;
 }
 
 
-SocketPeer::~SocketPeer() {
+void SocketPeer::_cleanup() {
+    --_number_of_instances;
 }
 
 }
