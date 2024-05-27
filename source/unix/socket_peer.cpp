@@ -43,6 +43,24 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
 }
 
 
+bool SocketPeer::_is_socket_valid(SOCKET socket_handle) {
+    bool result = false;
+
+    result = socket_handle >= 0;
+
+    return result;
+}
+
+
+int SocketPeer::_get_last_errno() {
+    int result = 0;
+
+    result = errno;
+
+    return result;
+}
+
+
 void SocketPeer::_startup() {
     ++_number_of_instances;
 }
@@ -50,6 +68,15 @@ void SocketPeer::_startup() {
 
 void SocketPeer::_cleanup() {
     --_number_of_instances;
+}
+
+
+int SocketPeer::_close() {
+    int result = 0;
+
+    result = close(_socket_handle);
+
+    return result;
 }
 
 }

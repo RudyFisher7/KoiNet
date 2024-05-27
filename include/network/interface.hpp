@@ -12,6 +12,7 @@
 
 namespace Koi::Network {
 
+//fixme:: don't use stl
 struct Interface {
 public:
     std::string friendly_name;

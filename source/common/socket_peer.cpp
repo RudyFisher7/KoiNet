@@ -8,6 +8,8 @@
 
 namespace Koi::Network {
 
+const std::string WILD_CARD_ADDRESS = "*";
+
 unsigned long SocketPeer::_number_of_instances = 0ul;
 
 
@@ -16,9 +18,10 @@ SocketPeer::SocketPeer() {
 }
 
 
-SocketPeer::SocketPeer(Mode in_mode, Protocol in_protocol) :
+SocketPeer::SocketPeer(Mode in_mode, Protocol in_protocol, std::string in_address) :
         _mode(in_mode),
-        _protocol(in_protocol) {
+        _protocol(in_protocol),
+        _address(in_address) {
     _startup();
     _socket();
 }

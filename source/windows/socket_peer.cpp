@@ -1,13 +1,9 @@
 #include "network/socket_peer.hpp"
 
 
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
-#endif
 #include <ws2tcpip.h>
 #include <iphlpapi.h>
 #include <codecvt>
-#include <locale>
 
 
 namespace Koi::Network {
@@ -82,6 +78,24 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
 }
 
 
+bool SocketPeer::_is_socket_valid(SOCKET socket_handle) {
+    bool result = false;
+
+    result = socket_handle != INVALID_SOCKET;
+
+    return result;
+}
+
+
+int SocketPeer::_get_last_errno() {
+    int result = 0;
+
+    result = WSAGetLastError();
+
+    return result;
+}
+
+
 void SocketPeer::_startup() {
     int result = 0;
 
@@ -137,11 +151,16 @@ int SocketPeer::_socket() {
         hints.ai_flags = AI_PASSIVE;
         addrinfo* local_addr = nullptr;
 
-        internal_error = getaddrinfo(0, "8080", &hints, &local_addr);
+        char* address = nullptr;
+        if (_address != WILD_CARD_ADDRESS) {
+            //
+        }
+
+        internal_error = getaddrinfo(address, "8080", &hints, &local_addr);
 
         _socket_handle = socket(local_addr->ai_family, local_addr->ai_socktype, local_addr->ai_protocol);
 
-        if (_socket_handle == INVALID_SOCKET) {
+        if (!_is_socket_valid(_socket_handle)) {
             _last_error = SOCKET_PEER_ERROR_INVALID_SOCKET;
         }
     }
@@ -151,6 +170,15 @@ int SocketPeer::_socket() {
     }
 
     result = _last_error;
+
+    return result;
+}
+
+
+int SocketPeer::_close() {
+    int result = 0;
+
+    result = closesocket(_socket_handle);
 
     return result;
 }

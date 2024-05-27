@@ -3,22 +3,23 @@
 
 
 #include "network/interface.hpp"
+#include "socket_peer.hpp"
 
 #include <string>
 #include <vector>
 
 
-
-
-namespace Koi::Network {
-
 #if defined(_WIN32)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
 #include <winsock2.h>
 #else
-#define INVALID_SOCKET -1
 typedef int SOCKET;
 #endif
 
+
+namespace Koi::Network {
 
 class SocketPeer final {
 public:
@@ -47,6 +48,9 @@ public:
     };
 
 
+    static const std::string WILD_CARD_ADDRESS;
+
+
 private:
     static unsigned long _number_of_instances;
 
@@ -54,25 +58,30 @@ private:
 
     int _mode = SOCKET_PEER_MODE_INVALID;
     int _protocol = SOCKET_PEER_PROTOCOL_INVALID;
+    std::string _address;
 
-    SOCKET _socket_handle = INVALID_SOCKET;
-
+    SOCKET _socket_handle = 0;
 
 public:
+    //fixme:: don't use stl
     static int get_interfaces(std::vector<Interface>& out_interfaces);
 
 
     SocketPeer();
-    SocketPeer(Mode in_mode, Protocol in_protocol);
+    SocketPeer(Mode in_mode, Protocol in_protocol, std::string in_address);
 
     ~SocketPeer();
 
 
 private:
+    static bool _is_socket_valid(SOCKET socket_handle);
+    static int _get_last_errno();
+
     void _startup();
     void _cleanup();
 
     int _socket();
+    int _close();
 };
 
 }
