@@ -23,6 +23,125 @@
  */
 
 
-int main() {
+#if defined(_WIN32)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else //Unix
+#include <cerrno>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+#endif
+
+
+#if defined(_WIN32)
+#define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
+#define CLOSESOCKET(s) closesocket(s)
+#define GETSOCKETERRNO() (WSAGetLastError())
+#if !defined(IPV6_V6ONLY)
+#define IPV6_V6ONLY 27
+#endif
+#else
+#define ISVALIDSOCKET(s) ((s) >= 0)
+#define CLOSESOCKET(s) close(s)
+#define GETSOCKETERRNO() (errno)
+typedef int SOCKET;
+#endif
+
+
+#if defined(_WIN32)
+#include <conio.h>
+#endif
+
+
+#include <string>
+
+#include <stdio.h>
+
+
+int main(int argc, char** argv) {
+#if defined(_WIN32)
+    WSAData d;
+    if (WSAStartup(MAKEWORD(2, 2), &d)) {
+        fprintf(stderr, "Failed 1");
+        return 1;
+    }
+#endif
+
+    std::string default_hostname = "127.0.0.1";
+    std::string default_port = "8080";
+
+    printf("configuring remote address... ");
+    addrinfo hints {};
+    memset(&hints, 0, sizeof(hints));
+    hints.ai_socktype = SOCK_STREAM;
+    addrinfo* peer_address = nullptr;
+
+    // getaddrinfo() will decide which ai_family to use based on the hostname.
+    if (argc < 3) {
+        if (getaddrinfo(default_hostname.c_str(), default_port.c_str(), &hints, &peer_address)) {
+            return 1;
+        }
+    } else if (getaddrinfo(argv[1], argv[2], &hints, &peer_address)) {
+        return 1;
+    }
+
+    char addr_buffer[100];
+    char service_buffer[100];
+    getnameinfo(
+            peer_address->ai_addr,
+            peer_address->ai_addrlen,
+            addr_buffer,
+            sizeof(addr_buffer),
+            service_buffer,
+            sizeof(service_buffer),
+            NI_NUMERICHOST
+    );
+
+    printf("%s:%s... done.\n", addr_buffer, service_buffer);
+
+    SOCKET socket_peer;
+    socket_peer = socket(
+            peer_address->ai_family,
+            peer_address->ai_socktype,
+            peer_address->ai_protocol
+    );
+
+    if (!ISVALIDSOCKET(socket_peer)) {
+        return 2;
+    }
+
+    printf("connecting... ");
+
+    // associates a socket with a remote address
+    // note: bind() associates a socket with a local address
+    if (connect(socket_peer, peer_address->ai_addr, peer_address->ai_addrlen)) {
+        printf("failed.");
+        return 3;
+    } else {
+        printf("done.\n");
+    }
+
+    freeaddrinfo(peer_address);
+
+    while (true) {
+        fd_set reads {};
+        FD_ZERO(&reads);
+        FD_SET(socket_peer, &reads);
+
+#if !defined(_WIN32)
+        FD_SET(0, &reads); // unix systems can use select() to monitor stdin too
+#endif
+    }
+
+
+#if defined(_WIN32)
+    WSACleanup();
+#endif
     return 0;
 }
