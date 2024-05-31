@@ -96,10 +96,8 @@ int SocketPeer::_get_last_errno() {
 }
 
 
-void SocketPeer::_startup() {
+void SocketPeer::startup() {
     int result = 0;
-
-    ++_number_of_instances;
 
     if (!_is_wsa_started) {
         int error = WSAStartup(MAKEWORD(2, 2), &_wsa_data);
@@ -111,12 +109,10 @@ void SocketPeer::_startup() {
 }
 
 
-void SocketPeer::_cleanup() {
+void SocketPeer::cleanup() {
     int result = 0;
 
-    --_number_of_instances;
-
-    if (_is_wsa_started && _number_of_instances == 0u) {
+    if (_is_wsa_started) {
         result = WSACleanup();
         _is_wsa_started = false;
     }
@@ -125,42 +121,20 @@ void SocketPeer::_cleanup() {
 }
 
 
-int SocketPeer::_socket() {
+int SocketPeer::open_local_handle(const addrinfo& hints) {
     int result = 0;
     int internal_error = 0;
 
+    _local_hints = hints;
+
     _last_error = SOCKET_PEER_ERROR_OK;
 
-    addrinfo hints {};
-    memset(&hints, 0, sizeof(hints));
-
-    switch (_protocol) {
-        case SOCKET_PEER_PROTOCOL_DATAGRAM:
-            hints.ai_socktype = SOCK_DGRAM;
-            break;
-        case SOCKET_PEER_PROTOCOL_STREAM:
-            hints.ai_socktype = SOCK_STREAM;
-            break;
-        default:
-            _last_error = SOCKET_PEER_ERROR_PROTOCOL;
-            break;
-    }
-
     if (_last_error == SOCKET_PEER_ERROR_OK) {
-        hints.ai_family = AF_INET6;
-        hints.ai_flags = AI_PASSIVE;
-        addrinfo* local_addr = nullptr;
+        internal_error = getaddrinfo(_address.c_str(), _port.c_str(), &_local_hints, &_local_addrinfo);
 
-        char* address = nullptr;
-        if (_address != WILD_CARD_ADDRESS) {
-            //
-        }
+        _local_socket_handle = socket(_local_addrinfo->ai_family, _local_addrinfo->ai_socktype, _local_addrinfo->ai_protocol);
 
-        internal_error = getaddrinfo(address, "8080", &hints, &local_addr);
-
-        _socket_handle = socket(local_addr->ai_family, local_addr->ai_socktype, local_addr->ai_protocol);
-
-        if (!_is_socket_valid(_socket_handle)) {
+        if (!_is_socket_valid(_local_socket_handle)) {
             _last_error = SOCKET_PEER_ERROR_INVALID_SOCKET;
         }
     }
@@ -175,12 +149,30 @@ int SocketPeer::_socket() {
 }
 
 
-int SocketPeer::_close() {
+int SocketPeer::close_local_handle() {
     int result = 0;
 
-    result = closesocket(_socket_handle);
+    result = closesocket(_local_socket_handle);
 
     return result;
+}
+
+
+int SocketPeer::bind_locally() {
+    return bind(
+            _local_socket_handle,
+            _local_addrinfo->ai_addr,
+            static_cast<int>(_local_addrinfo->ai_addrlen)
+    );
+}
+
+
+int SocketPeer::bind_remotely() {
+    return connect(
+            _local_socket_handle,
+            _local_addrinfo->ai_addr,
+            static_cast<int>(_local_addrinfo->ai_addrlen)
+    );
 }
 
 }

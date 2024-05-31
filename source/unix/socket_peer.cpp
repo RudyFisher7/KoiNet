@@ -61,22 +61,37 @@ int SocketPeer::_get_last_errno() {
 }
 
 
-void SocketPeer::_startup() {
-    ++_number_of_instances;
+void SocketPeer::startup() {
 }
 
 
-void SocketPeer::_cleanup() {
-    --_number_of_instances;
+void SocketPeer::cleanup() {
 }
 
 
-int SocketPeer::_close() {
+int SocketPeer::close_local_handle() {
     int result = 0;
 
-    result = close(_socket_handle);
+    result = close(_local_socket_handle);
 
     return result;
+}
+
+int SocketPeer::bind_locally() {
+    return bind(
+            _local_socket_handle,
+            _local_addrinfo->ai_addr,
+            _local_addrinfo->ai_addrlen
+    );
+}
+
+
+int SocketPeer::bind_remotely() {
+    return connect(
+            _local_socket_handle,
+            _local_addrinfo->ai_addr,
+            _local_addrinfo->ai_addrlen
+    );
 }
 
 }
