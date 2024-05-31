@@ -60,8 +60,10 @@ typedef int SOCKET;
 
 
 #include <string>
+#include <thread>
 
 #include <stdio.h>
+#include <time.h>
 
 
 int main(int argc, char** argv) {
@@ -73,8 +75,8 @@ int main(int argc, char** argv) {
     }
 #endif
 
-    std::string default_hostname = "127.0.0.1";
-    std::string default_port = "8080";
+    std::string default_hostname = "example.com";// "127.0.0.1";
+    std::string default_port = "80";// "8080";
 
     printf("configuring remote address... ");
     addrinfo hints {};
@@ -135,10 +137,48 @@ int main(int argc, char** argv) {
         FD_SET(socket_peer, &reads);
 
 #if !defined(_WIN32)
-        FD_SET(0, &reads); // unix systems can use select() to monitor stdin too
+        FD_SET(fileno(stdin), &reads); // unix systems can use select() to monitor stdin too
 #endif
+
+        timeval timeout;
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 100000;
+
+        if (select(socket_peer + 1, &reads, 0, 0, &timeout) < 0) {
+            return 4;
+        }
+
+        if (FD_ISSET(socket_peer, &reads)) {
+            char read[4096];
+            int bytes_read = recv(socket_peer, read, 4096, 0);
+            if (bytes_read < 1) {
+                printf("connection closed by peer.\n");
+                break;
+            } else {
+                // note: 'read' char array will not be null terminated, %.*s prints a string of specified length
+                printf("received (%d bytes): %.*s", bytes_read, bytes_read, read);
+            }
+        }
+
+#if defined(_WIN32)
+        if (_kbhit()) {
+#else
+        if (FD_ISSET(fileno(stdin), &reads)) {
+#endif
+            char read[4096];
+            if (!fgets(read, 4096, stdin)) {
+                break;
+            } else {
+                printf("sending %s... ", read);
+                int bytes_sent = send(socket_peer, read, strlen(read), 0);
+                printf("sent %d bytes.\n", bytes_sent);
+            }
+        }
     }
 
+    CLOSESOCKET(socket_peer);
+
+        std::this_thread::sleep_for(std::chrono::seconds(4));
 
 #if defined(_WIN32)
     WSACleanup();
