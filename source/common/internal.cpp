@@ -87,6 +87,27 @@ SOCKET Internal::create_handle(addrinfo& in_address_info) {
 }
 
 
+int Internal::set_handle_option(
+        SOCKET handle,
+        int level,
+        int option_name,
+        const char* option_value,
+        socklen_t option_length
+) {
+    int result = 0;
+
+    result = setsockopt(
+            handle,
+            level,
+            option_name,
+            option_value,
+            option_length
+    );
+
+    return result;
+}
+
+
 int Internal::bind_locally(
         SOCKET handle,
         sockaddr* address,
@@ -110,6 +131,28 @@ int Internal::bind_remotely(
     result = connect(handle, address, address_length);
 
     return result;
+}
+
+
+int Internal::listen_on_handle(SOCKET handle, int queue_size) {
+    int result = 0;
+
+    result = listen(handle, queue_size);
+
+    return result;
+}
+
+
+SOCKET Internal::accept_on_handle(
+        SOCKET handle,
+        sockaddr* address,
+        int* address_length
+) {
+    return accept(
+            handle,
+            address,
+            address_length
+    );
 }
 
 

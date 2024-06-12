@@ -81,7 +81,35 @@ public:
     static SOCKET create_handle(addrinfo& in_address_info);
 
 
-    static int set_handle_option();//todo:: implement
+    static int set_handle_option(
+            SOCKET handle,
+            int level,
+            int option_name,
+            const char* option_value,
+            socklen_t option_length
+    );
+
+
+    //todo:: test the validity of this template
+    template<typename T>
+    static int set_handle_option(
+            SOCKET handle,
+            int level,
+            int option_name,
+            const T& option_value
+    ) {
+        int result = 0;
+
+        result = setsockopt(
+                handle,
+                level,
+                option_name,
+                static_cast<const char*>(&option_value),
+                sizeof(T)
+        );
+
+        return result;
+    }
 
 
     static int bind_locally(
@@ -95,6 +123,16 @@ public:
             SOCKET handle,
             sockaddr* address,
             socklen_t address_length
+    );
+
+
+    static int listen_on_handle(SOCKET handle, int queue_size);
+
+
+    static SOCKET accept_on_handle(
+            SOCKET handle,
+            sockaddr* address,
+            int* address_length
     );
 
 
