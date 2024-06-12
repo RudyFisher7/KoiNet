@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.27)
 project(KoiNet)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
@@ -15,12 +15,13 @@ set(LIBS "")
 
 set(SOURCES
     source/interface.cpp
-    source/common/socket_peer.cpp
+    source/common/internal.cpp
 )
 
 set(HEADERS
-    include/network/socket_peer.hpp
+    include/network/internal.hpp
     include/network/interface.hpp
+    include/network/enums.hpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -30,11 +31,11 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     )
 
     list(APPEND SOURCES
-        source/windows/socket_peer.cpp
+        source/windows/internal.cpp
     )
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     list(APPEND SOURCES
-        source/unix/socket_peer.cpp
+        source/unix/internal.cpp
     )
 else ()
     message(FATAL_ERROR "System ${CMAKE_SYSTEM_NAME} is not supported!")

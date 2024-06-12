@@ -5,7 +5,7 @@
 #include "network/interface.hpp"
 
 
-namespace Koi::Network {
+namespace Koi { namespace Network {
 
 std::ostream& operator<<(std::ostream& lhs, const Interface& rhs) {
     lhs << "friendly name: " << rhs.friendly_name << "\n";
@@ -15,4 +15,5 @@ std::ostream& operator<<(std::ostream& lhs, const Interface& rhs) {
     return lhs;
 }
 
+}
 } // Koi::Network

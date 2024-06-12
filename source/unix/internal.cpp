@@ -1,4 +1,4 @@
-#include "../include/network/socket_peer.hpp"
+#include "../include/network/internal.hpp"
 
 
 #include <arpa/inet.h>
@@ -10,9 +10,10 @@
 #include <sys/socket.h>
 #include <sys/types.h>
 
-namespace Koi::Network {
+namespace Koi {
+namespace Network {
 
-int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
+int Internal::get_interfaces(std::vector<Interface>& out_interfaces) {
     int result = 0;
 
     ifaddrs* addresses;
@@ -27,11 +28,15 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
             int family = address->ifa_addr->sa_family;
             if (family == AF_INET) {
                 const int family_size = sizeof(sockaddr_in);
-                getnameinfo(address->ifa_addr, family_size, address_string, sizeof(address_string), 0, 0, NI_NUMERICHOST);
+                getnameinfo(
+                        address->ifa_addr, family_size, address_string, sizeof(address_string), 0, 0, NI_NUMERICHOST
+                );
                 out_interfaces.at(out_interfaces.size() - 1u).ipv_4_unicast_address = std::string(address_string);
             } else if (family == AF_INET6) {
                 const int family_size = sizeof(sockaddr_in6);
-                getnameinfo(address->ifa_addr, family_size, address_string, sizeof(address_string), 0, 0, NI_NUMERICHOST);
+                getnameinfo(
+                        address->ifa_addr, family_size, address_string, sizeof(address_string), 0, 0, NI_NUMERICHOST
+                );
                 out_interfaces.at(out_interfaces.size() - 1u).ipv_6_unicast_address = std::string(address_string);
             }
 
@@ -43,7 +48,15 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
 }
 
 
-bool SocketPeer::_is_socket_valid(SOCKET socket_handle) {
+void Internal::startup() {
+}
+
+
+void Internal::cleanup() {
+}
+
+
+bool Internal::is_socket_valid(SOCKET socket_handle) {
     bool result = false;
 
     result = socket_handle >= 0;
@@ -52,7 +65,7 @@ bool SocketPeer::_is_socket_valid(SOCKET socket_handle) {
 }
 
 
-int SocketPeer::_get_last_errno() {
+int Internal::get_last_errno() {
     int result = 0;
 
     result = errno;
@@ -61,37 +74,13 @@ int SocketPeer::_get_last_errno() {
 }
 
 
-void SocketPeer::startup() {
-}
-
-
-void SocketPeer::cleanup() {
-}
-
-
-int SocketPeer::close_local_handle() {
+int Internal::close_handle(SOCKET handle) {
     int result = 0;
 
-    result = close(_local_socket_handle);
+    result = close(handle);
 
     return result;
 }
 
-int SocketPeer::bind_locally() {
-    return bind(
-            _local_socket_handle,
-            _local_addrinfo->ai_addr,
-            _local_addrinfo->ai_addrlen
-    );
 }
-
-
-int SocketPeer::bind_remotely() {
-    return connect(
-            _local_socket_handle,
-            _local_addrinfo->ai_addr,
-            _local_addrinfo->ai_addrlen
-    );
-}
-
 }

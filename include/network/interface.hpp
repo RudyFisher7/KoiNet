@@ -10,7 +10,7 @@
 #include <iostream>
 
 
-namespace Koi::Network {
+namespace Koi { namespace Network {
 
 //fixme:: don't use stl
 struct Interface {
@@ -21,8 +21,10 @@ public:
 
 };
 
+
 std::ostream& operator<<(std::ostream& lhs, const Interface& rhs);
 
+}
 } // Koi::Network
 
 #endif //NETWORK_INTERFACE_HPP

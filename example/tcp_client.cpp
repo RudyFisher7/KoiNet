@@ -60,10 +60,11 @@ typedef int SOCKET;
 
 
 #include <string>
+#include <cstring>
 #include <thread>
 
-#include <stdio.h>
-#include <time.h>
+#include <cstdio>
+#include <ctime>
 
 
 int main(int argc, char** argv) {

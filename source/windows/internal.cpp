@@ -1,4 +1,4 @@
-#include "network/socket_peer.hpp"
+#include "network/internal.hpp"
 
 
 #include <ws2tcpip.h>
@@ -6,12 +6,14 @@
 #include <codecvt>
 
 
-namespace Koi::Network {
+namespace Koi {
+namespace Network {
 
 static WSADATA _wsa_data;
 static bool _is_wsa_started = false;
 
-int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
+
+int Internal::get_interfaces(std::vector<Interface>& out_interfaces) {
     int result = 0;
 
     ULONG error = ERROR_SUCCESS;
@@ -53,7 +55,10 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
         PIP_ADAPTER_UNICAST_ADDRESS unicast_address = adapter->FirstUnicastAddress;
         while (unicast_address) {
             char address_string[100];
-            error = getnameinfo(unicast_address->Address.lpSockaddr, unicast_address->Address.iSockaddrLength, address_string, sizeof(address_string), 0, 0, NI_NUMERICHOST);
+            error = getnameinfo(
+                    unicast_address->Address.lpSockaddr, unicast_address->Address.iSockaddrLength, address_string,
+                    sizeof(address_string), 0, 0, NI_NUMERICHOST
+            );
             if (error == 0) {
                 if (unicast_address->Address.lpSockaddr->sa_family == AF_INET) {
                     out_interfaces.at(out_interfaces.size() - 1u).ipv_4_unicast_address = std::string(address_string);
@@ -78,25 +83,7 @@ int SocketPeer::get_interfaces(std::vector<Interface>& out_interfaces) {
 }
 
 
-bool SocketPeer::_is_socket_valid(SOCKET socket_handle) {
-    bool result = false;
-
-    result = socket_handle != INVALID_SOCKET;
-
-    return result;
-}
-
-
-int SocketPeer::_get_last_errno() {
-    int result = 0;
-
-    result = WSAGetLastError();
-
-    return result;
-}
-
-
-void SocketPeer::startup() {
+void Internal::startup() {
     int result = 0;
 
     if (!_is_wsa_started) {
@@ -109,7 +96,7 @@ void SocketPeer::startup() {
 }
 
 
-void SocketPeer::cleanup() {
+void Internal::cleanup() {
     int result = 0;
 
     if (_is_wsa_started) {
@@ -121,58 +108,31 @@ void SocketPeer::cleanup() {
 }
 
 
-int SocketPeer::open_local_handle(const addrinfo& hints) {
-    int result = 0;
-    int internal_error = 0;
+bool Internal::is_socket_valid(SOCKET socket_handle) {
+    bool result = false;
 
-    _local_hints = hints;
-
-    _last_error = SOCKET_PEER_ERROR_OK;
-
-    if (_last_error == SOCKET_PEER_ERROR_OK) {
-        internal_error = getaddrinfo(_address.c_str(), _port.c_str(), &_local_hints, &_local_addrinfo);
-
-        _local_socket_handle = socket(_local_addrinfo->ai_family, _local_addrinfo->ai_socktype, _local_addrinfo->ai_protocol);
-
-        if (!_is_socket_valid(_local_socket_handle)) {
-            _last_error = SOCKET_PEER_ERROR_INVALID_SOCKET;
-        }
-    }
-
-    if (_last_error == SOCKET_PEER_ERROR_OK) {
-        //
-    }
-
-    result = _last_error;
+    result = socket_handle != INVALID_SOCKET;
 
     return result;
 }
 
 
-int SocketPeer::close_local_handle() {
+int Internal::get_last_errno() {
     int result = 0;
 
-    result = closesocket(_local_socket_handle);
+    result = WSAGetLastError();
 
     return result;
 }
 
 
-int SocketPeer::bind_locally() {
-    return bind(
-            _local_socket_handle,
-            _local_addrinfo->ai_addr,
-            static_cast<int>(_local_addrinfo->ai_addrlen)
-    );
+int Internal::close_handle(SOCKET handle) {
+    int result = 0;
+
+    result = closesocket(handle);
+
+    return result;
 }
 
-
-int SocketPeer::bind_remotely() {
-    return connect(
-            _local_socket_handle,
-            _local_addrinfo->ai_addr,
-            static_cast<int>(_local_addrinfo->ai_addrlen)
-    );
 }
-
 }
