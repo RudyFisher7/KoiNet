@@ -54,18 +54,52 @@ private:
     static Socket _largest_handle;
 
 public:
+
+    /**
+     * @brief Gets the socket handle with the largest value that has been added
+     * to the SocketSelector in any of its underlying SocketSets.
+     * @return The largest handle.
+     */
     static Socket get_largest_handle();
 
-    static int add_handle_for(Socket handle, int flags);
+
+    /**
+     * @brief Adds the given socket handle to the SocketSelector's underlying
+     * SocketSets based on the flags provided.
+     * @param handle The socket handle.
+     * @param flags The flags that determine with SocketSets the handle should
+     * be added to.
+     * This value should be a lor-ed value of SocketSelector::Flag enum values.
+     */
+    static void add_handle_for(Socket handle, int flags);
 
 
+    /**
+     * @brief Selects the handles of the underlying SocketSets.
+     * @param timeout The timeout of the select operation.
+     * @return The number of bits set across all underlying SocketSets, or -1 on
+     * error (0 if timed out).
+     */
     static int select_handles(TimeValue* timeout);
 
 
+    /**
+     * @brief Gets a lor-ed value of the readiness of the given socket value.
+     * @param handle The socket handle to check readiness of.
+     * @return The lor-ed readiness value. This will be lor-ed
+     * SocketSelector::Flag enum values.
+     */
     static int get_handle_readiness(Socket handle);
 
 
 private:
+
+    /**
+     * @brief Sets the largest handle this SocketSelector has in any of its
+     * underlying SocketSets.
+     * @param handle The value to set it to if it is greater than the current
+     * largest handle.
+     */
     static void _set_largest_handle(Socket handle);
 };
 

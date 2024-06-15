@@ -46,9 +46,7 @@ Socket SocketSelector::get_largest_handle() {
 }
 
 
-int SocketSelector::add_handle_for(Socket handle, int flags) {
-    int result = 0;
-
+void SocketSelector::add_handle_for(Socket handle, int flags) {
     if (SOCKET_HANDLER_FLAG_NONE != flags) {
         _set_largest_handle(handle);
 
@@ -64,8 +62,6 @@ int SocketSelector::add_handle_for(Socket handle, int flags) {
             Internal::set_socket_in_set(handle, &_master_exception_set);
         }
     }
-
-    return result;
 }
 
 
