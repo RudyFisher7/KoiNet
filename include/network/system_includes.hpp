@@ -48,12 +48,7 @@ SOFTWARE.
 #if !defined(IPV6_V6ONLY)
 #define IPV6_V6ONLY 27
 #endif
-typedef int SENDRESULT;
-typedef int SENDSIZE;
 #else
-typedef int SOCKET;
-typedef ssize_t SENDRESULT;
-typedef size_t SENDSIZE;
 #endif
 
 
