@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "network/internal.hpp"
+#include "network/os/internal.hpp"
 
 #include <ws2tcpip.h>
 #include <iphlpapi.h>

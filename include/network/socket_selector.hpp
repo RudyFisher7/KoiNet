@@ -23,29 +23,54 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_INTERFACE_HPP
-#define KOI_NETWORK_INTERFACE_HPP
+#ifndef KOI_NETWORK_SOCKET_HANDLER_HPP
+#define KOI_NETWORK_SOCKET_HANDLER_HPP
 
 
-#include <string>
-#include <iostream>
+#include "network/typedefs.hpp"
 
 
 namespace Koi { namespace Network {
 
-//fixme:: don't use stl
-struct Interface {
+class SocketSelector final {
 public:
-    std::string friendly_name;
-    std::string ipv_4_unicast_address;
-    std::string ipv_6_unicast_address;
+    enum Flag: int {
+        SOCKET_HANDLER_FLAG_NONE = 0,
+        SOCKET_HANDLER_FLAG_READ = 1 >> 0,
+        SOCKET_HANDLER_FLAG_WRITE = 1 >> 1,
+        SOCKET_HANDLER_FLAG_EXCEPTION = 1 >> 2
+    };
 
+
+private:
+    static SocketSet _master_read_set;
+    static SocketSet _master_write_set;
+    static SocketSet _master_exception_set;
+
+    static SocketSet _read_set;
+    static SocketSet _write_set;
+    static SocketSet _exception_set;
+
+    static Socket _largest_handle;
+
+public:
+    static Socket get_largest_handle();
+
+    static int add_handle_for(Socket handle, int flags);
+
+
+    static int select_handles(TimeValue* timeout);
+
+
+    static int get_handle_readiness(Socket handle);
+
+
+private:
+    static void _set_largest_handle(Socket handle);
 };
 
-
-std::ostream& operator<<(std::ostream& lhs, const Interface& rhs);
-
 }
-} // Koi::Network
+}
 
-#endif //KOI_NETWORK_INTERFACE_HPP
+
+#endif //KOI_NETWORK_SOCKET_HANDLER_HPP

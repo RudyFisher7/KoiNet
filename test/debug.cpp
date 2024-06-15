@@ -24,7 +24,7 @@ SOFTWARE.
 
 
 
-#include "network/internal.hpp"
+#include "network/os/internal.hpp"
 #include "network/interface.hpp"
 
 #include <vector>

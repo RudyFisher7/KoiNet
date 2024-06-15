@@ -17,23 +17,23 @@ set(LIBS KoiNet)
 message(STATUS "LIBS: ${LIBS}")
 
 
-#set(KOI_NET_EXAMPLE_1 KoiNetExample1)
-#
-#add_executable(${KOI_NET_EXAMPLE_1}
-#    time_server.cpp
-#)
-#
-#target_link_libraries(${KOI_NET_EXAMPLE_1} PRIVATE
-#    ${LIBS}
-#)
+set(KOI_NET_UDP_CLIENT_EXAMPLE KoiNetUdpClientExample)
+
+add_executable(${KOI_NET_UDP_CLIENT_EXAMPLE}
+    udp_client.cpp
+)
+
+target_link_libraries(${KOI_NET_UDP_CLIENT_EXAMPLE} PRIVATE
+    ${LIBS}
+)
 
 
-set(KOI_NET_EXAMPLE_2 KoiNetExample2)
+set(KOI_NET_TCP_CLIENT_EXAMPLE KoiNetTcpClientExample)
 
-add_executable(${KOI_NET_EXAMPLE_2}
+add_executable(${KOI_NET_TCP_CLIENT_EXAMPLE}
     tcp_client.cpp
 )
 
-target_link_libraries(${KOI_NET_EXAMPLE_2} PRIVATE
+target_link_libraries(${KOI_NET_TCP_CLIENT_EXAMPLE} PRIVATE
     ${LIBS}
 )

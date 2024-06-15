@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "../include/network/internal.hpp"
+#include "network/os/internal.hpp"
 
 #include <arpa/inet.h>
 #include <cerrno>

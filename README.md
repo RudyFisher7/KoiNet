@@ -13,7 +13,7 @@ This is an exercise to better learn best practices with low-level network progra
 3. API is exactly the same across each supported platform; user code should not have to change between each platform.
 4. Provide access to all features available when possible.
 5. Use no exceptions.
-6. Zero-overhead abstraction.
+6. Minimal-overhead abstraction.
 7. Use C++ compliant with standard.
 8. Keep binary size small.
 9. No warnings if possible.

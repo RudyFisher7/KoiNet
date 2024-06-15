@@ -23,11 +23,11 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_SERVER_HPP
+#ifndef KOI_NETWORK_SERVER_HPP //fixme::
 #define KOI_NETWORK_SERVER_HPP
 
 
-#include "network/system_includes.hpp"
+#include "system_includes.hpp"
 #include "network/enums.hpp"
 #include "network/typedefs.hpp"
 #include "network/interface.hpp"
@@ -40,7 +40,6 @@ namespace Koi { namespace Network {
 
 class Internal final {
 private:
-    static Socket _largest_socket_handle;
     static int _last_error;
 
 public:
@@ -67,11 +66,11 @@ public:
 
     static int get_name_info(
             const SocketAddress* socket_address,
-            SocketLength socket_length,
+            SocketAddressSize socket_length,
             char* out_host,
-            SocketLength max_host_length,
+            SocketAddressSize max_host_length,
             char* out_service,
-            SocketLength service_length,
+            SocketAddressSize service_length,
             int flags
     );
 
@@ -87,7 +86,7 @@ public:
             int level,
             int option_name,
             const char* option_value,
-            SocketLength option_length
+            SocketAddressSize option_length
     );
 
 
@@ -116,14 +115,14 @@ public:
     static int bind_locally(
             Socket handle,
             SocketAddress* address,
-            SocketLength address_length
+            SocketAddressSize address_length
     );
 
 
     static int bind_remotely(
             Socket handle,
             SocketAddress* address,
-            SocketLength address_length
+            SocketAddressSize address_length
     );
 
 
@@ -133,11 +132,11 @@ public:
     static Socket accept_on_handle(
             Socket handle,
             SocketAddress* address,
-            SocketLength* address_length
+            SocketAddressSize* address_size
     );
 
 
-    static SendReceiveResult send_over_stream(
+    static SendReceiveResult send_over_bound_handle(
             Socket handle,
             const char* buffer,
             BufferSize buffer_size,
@@ -145,7 +144,7 @@ public:
     );
 
 
-    static SendReceiveResult receive_over_stream(
+    static SendReceiveResult receive_over_bound_handle(
             Socket handle,
             char* buffer,
             BufferSize buffer_size,
@@ -153,11 +152,23 @@ public:
     );
 
 
-    static SendReceiveResult send_datagram();//todo:: implement
-    static SendReceiveResult receive_datagram();//todo:: implement
+    static SendReceiveResult send_to(
+            Socket handle,
+            const char* buffer,
+            BufferSize buffer_size,
+            int flags,
+            const SocketAddress* destination_address,
+            SocketAddressSize destination_address_size
+    );
 
-
-    static Socket get_number_of_handles();
+    static SendReceiveResult receive_from(
+            Socket handle,
+            char* buffer,
+            BufferSize buffer_size,
+            int flags,
+            SocketAddress* origin_address,
+            SocketAddressSize* origin_address_size
+    );
 
 
     static void clean_socket_set(SocketSet* set);

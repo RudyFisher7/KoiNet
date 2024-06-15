@@ -50,7 +50,7 @@ int main(int argc, char** argv) {
 
     printf("configuring remote address... ");
     KoiNet::AddressInfo hints = KoiNet::Internal::get_clean_address_info();
-    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_socktype = SOCK_DGRAM;
     KoiNet::AddressInfo* peer_address = nullptr;
 
     // getaddrinfo() will decide which ai_family to use based on the hostname.
@@ -61,7 +61,7 @@ int main(int argc, char** argv) {
                         default_port.c_str(),
                         &hints, &peer_address
                 )
-        ) {
+                ) {
             return 1;
         }
     } else if (
@@ -84,7 +84,7 @@ int main(int argc, char** argv) {
             sizeof(addr_buffer),
             service_buffer,
             sizeof(service_buffer),
-            NI_NUMERICHOST
+            NI_NUMERICHOST | NI_NUMERICSERV
     );
 
     printf("%s:%s... done.\n", addr_buffer, service_buffer);
@@ -96,23 +96,6 @@ int main(int argc, char** argv) {
         return 2;
     }
 
-    printf("connecting... ");
-
-    // associates a socket with a remote address
-    if (
-            KoiNet::Internal::bind_remotely(
-                    socket_peer,
-                    peer_address->ai_addr,
-                    peer_address->ai_addrlen
-            )
-    ) {
-        printf("failed.");
-        return 3;
-    } else {
-        printf("done.\n");
-    }
-
-    KoiNet::Internal::free_address_info(peer_address);
 
     while (true) {
         KoiNet::SocketSet master_set {};
@@ -137,8 +120,9 @@ int main(int argc, char** argv) {
 
         if (KoiNet::Internal::is_socket_ready_in_set(socket_peer, &read_set)) {
             char read[4096];
-            KoiNet::SendReceiveResult bytes_read = KoiNet::Internal::receive_over_bound_handle(
-                    socket_peer, read, 4096, 0
+            KoiNet::SocketAddressSize address_size = sizeof(KoiNet::SocketAddressStorage);
+            KoiNet::SendReceiveResult bytes_read = KoiNet::Internal::receive_from(
+                    socket_peer, read, 4096, 0, peer_address->ai_addr, &address_size
             );
             if (bytes_read < 1) {
                 printf("connection closed by peer.\n");
@@ -152,18 +136,20 @@ int main(int argc, char** argv) {
 #if defined(_WIN32)
         if (_kbhit()) {
 #else
-        if (KoiNet::Internal::is_socket_ready_in_set(fileno(stdin), &read_set)) {
+            if (KoiNet::Internal::is_socket_ready_in_set(fileno(stdin), &read_set)) {
 #endif
             char read[4096];
             if (!fgets(read, 4096, stdin)) {
                 break;
             } else {
                 printf("sending %s... ", read);
-                KoiNet::SendReceiveResult bytes_sent = KoiNet::Internal::send_over_bound_handle(socket_peer, read, (KoiNet::BufferSize)strlen(read), 0);
+                KoiNet::SendReceiveResult bytes_sent = KoiNet::Internal::send_to(socket_peer, read, (KoiNet::BufferSize)strlen(read), 0, peer_address->ai_addr, peer_address->ai_addrlen);
                 printf("sent %d bytes.\n", bytes_sent);
             }
         }
     }
+
+    KoiNet::Internal::free_address_info(peer_address);
 
     KoiNet::Internal::close_handle(socket_peer);
 

@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "../include/network/internal.hpp"
+#include "network/os/internal.hpp"
 
 #include <cstring>
 
@@ -31,7 +31,6 @@ SOFTWARE.
 namespace Koi {
 namespace Network {
 
-Socket Internal::_largest_socket_handle = 0;
 int Internal::_last_error = SOCKET_PEER_ERROR_OK;
 
 
@@ -64,11 +63,11 @@ int Internal::get_address_info(
 
 int Internal::get_name_info(
         const SocketAddress* socket_address,
-        SocketLength socket_length,
+        SocketAddressSize socket_length,
         char* out_host,
-        SocketLength max_host_length,
+        SocketAddressSize max_host_length,
         char* out_service,
-        SocketLength service_length,
+        SocketAddressSize service_length,
         int flags
 ) {
     int result = 0;
@@ -112,7 +111,7 @@ int Internal::set_handle_option(
         int level,
         int option_name,
         const char* option_value,
-        SocketLength option_length
+        SocketAddressSize option_length
 ) {
     int result = 0;
 
@@ -131,7 +130,7 @@ int Internal::set_handle_option(
 int Internal::bind_locally(
         Socket handle,
         SocketAddress* address,
-        SocketLength address_length
+        SocketAddressSize address_length
 ) {
     int result = 0;
 
@@ -144,7 +143,7 @@ int Internal::bind_locally(
 int Internal::bind_remotely(
         Socket handle,
         SocketAddress* address,
-        SocketLength address_length
+        SocketAddressSize address_length
 ) {
     int result = 0;
 
@@ -166,18 +165,18 @@ int Internal::listen_on_handle(Socket handle, int queue_size) {
 Socket Internal::accept_on_handle(
         Socket handle,
         SocketAddress* address,
-        SocketLength* address_length
+        SocketAddressSize* address_size
 ) {
 
     return accept(
             handle,
             address,
-            address_length
+            address_size
     );
 }
 
 
-SendReceiveResult Internal::send_over_stream(
+SendReceiveResult Internal::send_over_bound_handle(
         Socket handle,
         const char* buffer,
         BufferSize buffer_size,
@@ -191,7 +190,7 @@ SendReceiveResult Internal::send_over_stream(
 }
 
 
-SendReceiveResult Internal::receive_over_stream(
+SendReceiveResult Internal::receive_over_bound_handle(
         Socket handle,
         char* buffer,
         BufferSize buffer_size,
@@ -205,8 +204,49 @@ SendReceiveResult Internal::receive_over_stream(
 }
 
 
-Socket Internal::get_number_of_handles() {
-    return _largest_socket_handle + 1;
+SendReceiveResult Internal::send_to(
+        Socket handle,
+        const char* buffer,
+        BufferSize buffer_size,
+        int flags,
+        const SocketAddress* destination_address,
+        SocketAddressSize destination_address_size
+) {
+    SendReceiveResult result = 0;
+
+    result = sendto(
+            handle,
+            buffer,
+            buffer_size,
+            flags,
+            destination_address,
+            destination_address_size
+    );
+
+    return result;
+}
+
+
+SendReceiveResult Internal::receive_from(
+        Socket handle,
+        char* buffer,
+        BufferSize buffer_size,
+        int flags,
+        SocketAddress* origin_address,
+        SocketAddressSize* origin_address_size
+) {
+    SendReceiveResult result = 0;
+
+    result = recvfrom(
+            handle,
+            buffer,
+            buffer_size,
+            flags,
+            origin_address,
+            origin_address_size
+    );
+
+    return result;
 }
 
 

@@ -15,15 +15,17 @@ set(LIBS "")
 
 set(SOURCES
     source/interface.cpp
-    source/common/internal.cpp
+    source/os/common/internal.cpp
+    source/socket_selector.cpp
 )
 
 set(HEADERS
-    include/network/system_includes.hpp
+    include/network/os/system_includes.hpp
+    include/network/os/internal.hpp
     include/network/typedefs.hpp
-    include/network/internal.hpp
-    include/network/interface.hpp
     include/network/enums.hpp
+    include/network/interface.hpp
+    include/network/socket_selector.hpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -33,11 +35,11 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     )
 
     list(APPEND SOURCES
-        source/windows/internal.cpp
+        source/os/windows/internal.cpp
     )
 elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
     list(APPEND SOURCES
-        source/unix/internal.cpp
+        source/os/unix/internal.cpp
     )
 else ()
     message(FATAL_ERROR "System ${CMAKE_SYSTEM_NAME} is not supported!")

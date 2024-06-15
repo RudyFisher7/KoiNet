@@ -23,10 +23,10 @@ SOFTWARE.
 */
 
 
-#ifndef KOINET_TYPEDEFS_HPP
-#define KOINET_TYPEDEFS_HPP
+#ifndef KOI_NETWORK_TYPEDEFS_HPP
+#define KOI_NETWORK_TYPEDEFS_HPP
 
-#include "network/system_includes.hpp"
+#include "network/os/system_includes.hpp"
 
 namespace Koi { namespace Network {
 
@@ -43,11 +43,11 @@ typedef size_t BufferSize;
 typedef addrinfo AddressInfo;
 typedef sockaddr SocketAddress;
 typedef sockaddr_storage SocketAddressStorage;
-typedef socklen_t SocketLength;
+typedef socklen_t SocketAddressSize;
 typedef fd_set SocketSet;
 typedef timeval TimeValue;
 
 }
 }
 
-#endif //KOINET_TYPEDEFS_HPP
+#endif //KOI_NETWORK_TYPEDEFS_HPP
