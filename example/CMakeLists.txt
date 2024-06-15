@@ -12,33 +12,20 @@ message(STATUS "Configured for compiler abi ${CMAKE_CXX_COMPILER_ABI}")
 message(STATUS "Configured for system ${CMAKE_SYSTEM_NAME}")
 
 
-set(LIBS "")
-
-
-if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
-    set(LIBS
-        ws2_32
-        iphlpapi
-    )
-
-elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
-
-else ()
-    message(FATAL_ERROR "System ${CMAKE_SYSTEM_NAME} is not supported!")
-endif ()
+set(LIBS KoiNet)
 
 message(STATUS "LIBS: ${LIBS}")
 
 
-set(KOI_NET_EXAMPLE_1 KoiNetExample1)
-
-add_executable(${KOI_NET_EXAMPLE_1}
-    time_server.cpp
-)
-
-target_link_libraries(${KOI_NET_EXAMPLE_1} PRIVATE
-    ${LIBS}
-)
+#set(KOI_NET_EXAMPLE_1 KoiNetExample1)
+#
+#add_executable(${KOI_NET_EXAMPLE_1}
+#    time_server.cpp
+#)
+#
+#target_link_libraries(${KOI_NET_EXAMPLE_1} PRIVATE
+#    ${LIBS}
+#)
 
 
 set(KOI_NET_EXAMPLE_2 KoiNetExample2)

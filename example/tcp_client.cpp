@@ -1,62 +1,29 @@
 /*
- * MIT License
- *
- * Copyright (c) 2018 Lewis Van Winkle
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- */
+MIT License
+
+Copyright (c) 2024 kiyasui-hito
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 
-#if defined(_WIN32)
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
-#endif
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else //Unix
-#include <cerrno>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#endif
-
-
-#if defined(_WIN32)
-#define ISVALIDSOCKET(s) ((s) != INVALID_SOCKET)
-#define CLOSESOCKET(s) closesocket(s)
-#define GETSOCKETERRNO() (WSAGetLastError())
-#if !defined(IPV6_V6ONLY)
-#define IPV6_V6ONLY 27
-#endif
-#else
-#define ISVALIDSOCKET(s) ((s) >= 0)
-#define CLOSESOCKET(s) close(s)
-#define GETSOCKETERRNO() (errno)
-typedef int SOCKET;
-#endif
-
-
-#if defined(_WIN32)
-#include <conio.h>
-#endif
+#include <network/internal.hpp>
 
 
 #include <string>
@@ -67,36 +34,50 @@ typedef int SOCKET;
 #include <ctime>
 
 
-int main(int argc, char** argv) {
 #if defined(_WIN32)
-    WSAData d;
-    if (WSAStartup(MAKEWORD(2, 2), &d)) {
-        fprintf(stderr, "Failed 1");
-        return 1;
-    }
+#include <conio.h>
 #endif
 
-    std::string default_hostname = "example.com";// "127.0.0.1";
-    std::string default_port = "80";// "8080";
+
+namespace KoiNet = Koi::Network;
+
+
+int main(int argc, char** argv) {
+    KoiNet::Internal::startup();
+
+    std::string default_hostname = "127.0.0.1";
+    std::string default_port = "8080";
 
     printf("configuring remote address... ");
-    addrinfo hints {};
-    memset(&hints, 0, sizeof(hints));
+    KoiNet::AddressInfo hints = KoiNet::Internal::get_clean_address_info();
     hints.ai_socktype = SOCK_STREAM;
-    addrinfo* peer_address = nullptr;
+    KoiNet::AddressInfo* peer_address = nullptr;
 
     // getaddrinfo() will decide which ai_family to use based on the hostname.
     if (argc < 3) {
-        if (getaddrinfo(default_hostname.c_str(), default_port.c_str(), &hints, &peer_address)) {
+        if (
+                KoiNet::Internal::get_address_info(
+                        default_hostname.c_str(),
+                        default_port.c_str(),
+                        &hints, &peer_address
+                )
+        ) {
             return 1;
         }
-    } else if (getaddrinfo(argv[1], argv[2], &hints, &peer_address)) {
+    } else if (
+            KoiNet::Internal::get_address_info(
+                    argv[1],
+                    argv[2],
+                    &hints,
+                    &peer_address
+            )
+    ) {
         return 1;
     }
 
     char addr_buffer[100];
     char service_buffer[100];
-    getnameinfo(
+    KoiNet::Internal::get_name_info(
             peer_address->ai_addr,
             peer_address->ai_addrlen,
             addr_buffer,
@@ -108,50 +89,55 @@ int main(int argc, char** argv) {
 
     printf("%s:%s... done.\n", addr_buffer, service_buffer);
 
-    SOCKET socket_peer;
-    socket_peer = socket(
-            peer_address->ai_family,
-            peer_address->ai_socktype,
-            peer_address->ai_protocol
-    );
+    KoiNet::Socket socket_peer;
+    socket_peer = KoiNet::Internal::create_handle(*peer_address);
 
-    if (!ISVALIDSOCKET(socket_peer)) {
+    if (!KoiNet::Internal::is_socket_valid(socket_peer)) {
         return 2;
     }
 
     printf("connecting... ");
 
     // associates a socket with a remote address
-    // note: bind() associates a socket with a local address
-    if (connect(socket_peer, peer_address->ai_addr, peer_address->ai_addrlen)) {
+    if (
+            KoiNet::Internal::bind_remotely(
+                    socket_peer,
+                    peer_address->ai_addr,
+                    peer_address->ai_addrlen
+            )
+    ) {
         printf("failed.");
         return 3;
     } else {
         printf("done.\n");
     }
 
-    freeaddrinfo(peer_address);
+    KoiNet::Internal::free_address_info(peer_address);
 
     while (true) {
-        fd_set reads {};
-        FD_ZERO(&reads);
-        FD_SET(socket_peer, &reads);
+        KoiNet::SocketSet master_set {};
+        KoiNet::Internal::clean_socket_set(&master_set);
+        KoiNet::Internal::set_socket_in_set(socket_peer, &master_set);
 
 #if !defined(_WIN32)
-        FD_SET(fileno(stdin), &reads); // unix systems can use select() to monitor stdin too
+        KoiNet::Internal::set_socket_in_set(fileno(stdin), &master_set); // unix systems can use select() to monitor stdin too
 #endif
 
-        timeval timeout;
+        KoiNet::SocketSet read_set = master_set;
+        KoiNet::SocketSet write_set = master_set;
+        KoiNet::SocketSet exception_set = master_set;
+
+        KoiNet::TimeValue timeout;
         timeout.tv_sec = 0;
         timeout.tv_usec = 100000;
 
-        if (select(socket_peer + 1, &reads, 0, 0, &timeout) < 0) {
+        if (KoiNet::Internal::select_handles(socket_peer + 1, &read_set, &write_set, &exception_set, &timeout) < 0) {
             return 4;
         }
 
-        if (FD_ISSET(socket_peer, &reads)) {
+        if (KoiNet::Internal::is_socket_ready_in_set(socket_peer, &read_set)) {
             char read[4096];
-            int bytes_read = recv(socket_peer, read, 4096, 0);
+            KoiNet::SendReceiveResult bytes_read = KoiNet::Internal::receive_over_stream(socket_peer, read, 4096, 0);
             if (bytes_read < 1) {
                 printf("connection closed by peer.\n");
                 break;
@@ -164,25 +150,23 @@ int main(int argc, char** argv) {
 #if defined(_WIN32)
         if (_kbhit()) {
 #else
-        if (FD_ISSET(fileno(stdin), &reads)) {
+        if (KoiNet::Internal::is_socket_ready_in_set(fileno(stdin), &read_set)) {
 #endif
             char read[4096];
             if (!fgets(read, 4096, stdin)) {
                 break;
             } else {
                 printf("sending %s... ", read);
-                int bytes_sent = send(socket_peer, read, strlen(read), 0);
+                KoiNet::SendReceiveResult bytes_sent = send(socket_peer, read, (KoiNet::BufferSize)strlen(read), 0);
                 printf("sent %d bytes.\n", bytes_sent);
             }
         }
     }
 
-    CLOSESOCKET(socket_peer);
+    KoiNet::Internal::close_handle(socket_peer);
 
-        std::this_thread::sleep_for(std::chrono::seconds(4));
+    std::this_thread::sleep_for(std::chrono::seconds(16));
 
-#if defined(_WIN32)
-    WSACleanup();
-#endif
+    Koi::Network::Internal::cleanup();
     return 0;
 }

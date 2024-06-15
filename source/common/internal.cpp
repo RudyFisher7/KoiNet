@@ -1,6 +1,26 @@
-//
-// Created by rfish on 5/25/2024.
-//
+/*
+MIT License
+
+Copyright (c) 2024 kiyasui-hito
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
 
 
 #include "../include/network/internal.hpp"
@@ -11,22 +31,22 @@
 namespace Koi {
 namespace Network {
 
-SOCKET Internal::_largest_socket_handle = 0;
+Socket Internal::_largest_socket_handle = 0;
 int Internal::_last_error = SOCKET_PEER_ERROR_OK;
 
 
-addrinfo Internal::get_clean_addr_info() {
-    addrinfo result {};
+AddressInfo Internal::get_clean_address_info() {
+    AddressInfo result {};
     memset(&result, 0, sizeof(result));//fixme:: error handling?
     return result;
 }
 
 
-int Internal::get_addr_info(
+int Internal::get_address_info(
         const char* hostname,
         const char* port,
-        addrinfo* hints,
-        addrinfo** out_result
+        AddressInfo* hints,
+        AddressInfo** out_result
 ) {
     int result = 0;
 
@@ -43,12 +63,12 @@ int Internal::get_addr_info(
 
 
 int Internal::get_name_info(
-        const sockaddr* socket_address,
-        socklen_t socket_length,
+        const SocketAddress* socket_address,
+        SocketLength socket_length,
         char* out_host,
-        socklen_t max_host_length,
+        SocketLength max_host_length,
         char* out_service,
-        socklen_t service_length,
+        SocketLength service_length,
         int flags
 ) {
     int result = 0;
@@ -68,14 +88,14 @@ int Internal::get_name_info(
 }
 
 
-void Internal::free_addr_info(addrinfo* address) {
+void Internal::free_address_info(AddressInfo* address) {
     freeaddrinfo(address);
     address = nullptr;
 }
 
 
-SOCKET Internal::create_handle(addrinfo& in_address_info) {
-    SOCKET result = 0;
+Socket Internal::create_handle(AddressInfo& in_address_info) {
+    Socket result = 0;
 
     result = socket(
             in_address_info.ai_family,
@@ -88,11 +108,11 @@ SOCKET Internal::create_handle(addrinfo& in_address_info) {
 
 
 int Internal::set_handle_option(
-        SOCKET handle,
+        Socket handle,
         int level,
         int option_name,
         const char* option_value,
-        socklen_t option_length
+        SocketLength option_length
 ) {
     int result = 0;
 
@@ -109,9 +129,9 @@ int Internal::set_handle_option(
 
 
 int Internal::bind_locally(
-        SOCKET handle,
-        sockaddr* address,
-        socklen_t address_length
+        Socket handle,
+        SocketAddress* address,
+        SocketLength address_length
 ) {
     int result = 0;
 
@@ -122,9 +142,9 @@ int Internal::bind_locally(
 
 
 int Internal::bind_remotely(
-        SOCKET handle,
-        sockaddr* address,
-        socklen_t address_length
+        Socket handle,
+        SocketAddress* address,
+        SocketLength address_length
 ) {
     int result = 0;
 
@@ -134,7 +154,7 @@ int Internal::bind_remotely(
 }
 
 
-int Internal::listen_on_handle(SOCKET handle, int queue_size) {
+int Internal::listen_on_handle(Socket handle, int queue_size) {
     int result = 0;
 
     result = listen(handle, queue_size);
@@ -143,11 +163,12 @@ int Internal::listen_on_handle(SOCKET handle, int queue_size) {
 }
 
 
-SOCKET Internal::accept_on_handle(
-        SOCKET handle,
-        sockaddr* address,
-        int* address_length
+Socket Internal::accept_on_handle(
+        Socket handle,
+        SocketAddress* address,
+        SocketLength* address_length
 ) {
+
     return accept(
             handle,
             address,
@@ -156,37 +177,65 @@ SOCKET Internal::accept_on_handle(
 }
 
 
-SOCKET Internal::get_number_of_handles() {
+SendReceiveResult Internal::send_over_stream(
+        Socket handle,
+        const char* buffer,
+        BufferSize buffer_size,
+        int flags
+) {
+    SendReceiveResult result = 0;
+
+    result = send(handle, buffer, buffer_size, flags);
+
+    return result;
+}
+
+
+SendReceiveResult Internal::receive_over_stream(
+        Socket handle,
+        char* buffer,
+        BufferSize buffer_size,
+        int flags
+) {
+    SendReceiveResult result = 0;
+
+    result = recv(handle, buffer, buffer_size, flags);
+
+    return result;
+}
+
+
+Socket Internal::get_number_of_handles() {
     return _largest_socket_handle + 1;
 }
 
 
-void Internal::file_descriptor_zero(fd_set* set) {
+void Internal::clean_socket_set(SocketSet* set) {
     FD_ZERO(set);
 }
 
 
-void Internal::file_descriptor_set(SOCKET handle, fd_set* set) {
+void Internal::set_socket_in_set(Socket handle, SocketSet* set) {
     FD_SET(handle, set);
 }
 
 
-void Internal::file_descriptor_clear(SOCKET handle, fd_set* set) {
+void Internal::clear_socket_set(Socket handle, SocketSet* set) {
     FD_CLR(handle, set);
 }
 
 
-bool Internal::is_file_descriptor_set(SOCKET handle, fd_set* set) {
+bool Internal::is_socket_ready_in_set(Socket handle, SocketSet* set) {
     return FD_ISSET(handle, set);
 }
 
 
 int Internal::select_handles(
-        SOCKET number_of_handles,
-        fd_set* read_handles,
-        fd_set* write_handles,
-        fd_set* exception_handles,
-        timeval* timeout
+        Socket number_of_handles,
+        SocketSet* read_handles,
+        SocketSet* write_handles,
+        SocketSet* exception_handles,
+        TimeValue* timeout
 ) {
     int result = 0;
 

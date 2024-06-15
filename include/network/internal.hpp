@@ -1,45 +1,46 @@
+/*
+MIT License
+
+Copyright (c) 2024 kiyasui-hito
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
+
 #ifndef KOI_NETWORK_SERVER_HPP
 #define KOI_NETWORK_SERVER_HPP
 
 
+#include "network/system_includes.hpp"
 #include "network/enums.hpp"
+#include "network/typedefs.hpp"
 #include "network/interface.hpp"
 
 #include <string>
 #include <vector>
 
 
-#if defined(_WIN32)
-#ifndef _WIN32_WINNT
-#define _WIN32_WINNT 0x0600
-#endif
-#include <winsock2.h>
-#include <ws2tcpip.h>
-#else //Unix
-#include <cerrno>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <unistd.h>
-#endif
-
-
-#if defined(_WIN32)
-#include <winsock2.h>
-#if !defined(IPV6_V6ONLY)
-#define IPV6_V6ONLY 27
-#endif
-#else
-typedef int SOCKET;
-#endif
-
-
 namespace Koi { namespace Network {
 
 class Internal final {
 private:
-    static SOCKET _largest_socket_handle;
+    static Socket _largest_socket_handle;
     static int _last_error;
 
 public:
@@ -53,47 +54,47 @@ public:
     static int get_interfaces(std::vector<Interface>& out_interfaces);
 
 
-    static addrinfo get_clean_addr_info();
+    static AddressInfo get_clean_address_info();
 
 
-    static int get_addr_info(
+    static int get_address_info(
             const char* hostname,
             const char* port,
-            addrinfo* hints,
-            addrinfo** out_result
+            AddressInfo* hints,
+            AddressInfo** out_result
     );
 
 
     static int get_name_info(
-            const sockaddr* socket_address,
-            socklen_t socket_length,
+            const SocketAddress* socket_address,
+            SocketLength socket_length,
             char* out_host,
-            socklen_t max_host_length,
+            SocketLength max_host_length,
             char* out_service,
-            socklen_t service_length,
+            SocketLength service_length,
             int flags
     );
 
 
-    static void free_addr_info(addrinfo* address);
+    static void free_address_info(AddressInfo* address);
 
 
-    static SOCKET create_handle(addrinfo& in_address_info);
+    static Socket create_handle(AddressInfo& in_address_info);
 
 
     static int set_handle_option(
-            SOCKET handle,
+            Socket handle,
             int level,
             int option_name,
             const char* option_value,
-            socklen_t option_length
+            SocketLength option_length
     );
 
 
     //todo:: test the validity of this template
     template<typename T>
     static int set_handle_option(
-            SOCKET handle,
+            Socket handle,
             int level,
             int option_name,
             const T& option_value
@@ -113,66 +114,80 @@ public:
 
 
     static int bind_locally(
-            SOCKET handle,
-            sockaddr* address,
-            socklen_t address_length
+            Socket handle,
+            SocketAddress* address,
+            SocketLength address_length
     );
 
 
     static int bind_remotely(
-            SOCKET handle,
-            sockaddr* address,
-            socklen_t address_length
+            Socket handle,
+            SocketAddress* address,
+            SocketLength address_length
     );
 
 
-    static int listen_on_handle(SOCKET handle, int queue_size);
+    static int listen_on_handle(Socket handle, int queue_size);
 
 
-    static SOCKET accept_on_handle(
-            SOCKET handle,
-            sockaddr* address,
-            int* address_length
+    static Socket accept_on_handle(
+            Socket handle,
+            SocketAddress* address,
+            SocketLength* address_length
     );
 
 
-    static int send_over_stream();//todo:: implement
-    static int receive_over_stream();//todo:: implement
-    static int send_datagram();//todo:: implement
-    static int receive_datagram();//todo:: implement
+    static SendReceiveResult send_over_stream(
+            Socket handle,
+            const char* buffer,
+            BufferSize buffer_size,
+            int flags
+    );
 
 
-    static SOCKET get_number_of_handles();
+    static SendReceiveResult receive_over_stream(
+            Socket handle,
+            char* buffer,
+            BufferSize buffer_size,
+            int flags
+    );
 
 
-    static void file_descriptor_zero(fd_set* set);
+    static SendReceiveResult send_datagram();//todo:: implement
+    static SendReceiveResult receive_datagram();//todo:: implement
 
 
-    static void file_descriptor_set(SOCKET handle, fd_set* set);
+    static Socket get_number_of_handles();
 
 
-    static void file_descriptor_clear(SOCKET handle, fd_set* set);
+    static void clean_socket_set(SocketSet* set);
 
 
-    static bool is_file_descriptor_set(SOCKET handle, fd_set* set);
+    static void set_socket_in_set(Socket handle, SocketSet* set);
+
+
+    static void clear_socket_set(Socket handle, SocketSet* set);
+
+
+    static bool is_socket_ready_in_set(Socket handle, SocketSet* set);
 
 
     static int select_handles(
-            SOCKET number_of_handles,
-            fd_set* read_handles,
-            fd_set* write_handles,
-            fd_set* exception_handles,
-            timeval* timeout
+            Socket number_of_handles,
+            SocketSet* read_handles,
+            SocketSet* write_handles,
+            SocketSet* exception_handles,
+            TimeValue* timeout
     );
 
 
-    static bool is_socket_valid(SOCKET socket_handle);
+    static bool is_socket_valid(Socket socket_handle);
 
 
     static int get_last_errno();
 
 
-    static int close_handle(SOCKET handle);
+    static int close_handle(Socket handle);
 
 
     Internal() = delete;

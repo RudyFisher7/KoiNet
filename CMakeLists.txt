@@ -19,6 +19,8 @@ set(SOURCES
 )
 
 set(HEADERS
+    include/network/system_includes.hpp
+    include/network/typedefs.hpp
     include/network/internal.hpp
     include/network/interface.hpp
     include/network/enums.hpp

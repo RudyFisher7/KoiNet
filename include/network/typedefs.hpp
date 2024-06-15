@@ -23,18 +23,31 @@ SOFTWARE.
 */
 
 
-#include "network/interface.hpp"
+#ifndef KOINET_TYPEDEFS_HPP
+#define KOINET_TYPEDEFS_HPP
 
+#include "network/system_includes.hpp"
 
 namespace Koi { namespace Network {
 
-std::ostream& operator<<(std::ostream& lhs, const Interface& rhs) {
-    lhs << "friendly name: " << rhs.friendly_name << "\n";
-    lhs << "ipv4: " << rhs.ipv_4_unicast_address << "\n";
-    lhs << "ipv6: " << rhs.ipv_6_unicast_address << "\n";
+#if defined(_WIN32)
+typedef SOCKET Socket;
+typedef int SendReceiveResult;
+typedef int BufferSize;
+#else
+typedef int Socket;
+typedef ssize_t SendReceiveResult;
+typedef size_t BufferSize;
+#endif
 
-    return lhs;
+typedef addrinfo AddressInfo;
+typedef sockaddr SocketAddress;
+typedef sockaddr_storage SocketAddressStorage;
+typedef socklen_t SocketLength;
+typedef fd_set SocketSet;
+typedef timeval TimeValue;
+
+}
 }
 
-}
-} // Koi::Network
+#endif //KOINET_TYPEDEFS_HPP

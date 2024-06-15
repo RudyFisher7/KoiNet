@@ -23,18 +23,38 @@ SOFTWARE.
 */
 
 
-#include "network/interface.hpp"
+#ifndef KOINET_SYSTEM_INCLUDES_HPP
+#define KOINET_SYSTEM_INCLUDES_HPP
 
 
-namespace Koi { namespace Network {
+#if defined(_WIN32)
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#else //Unix
+#include <cerrno>
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <unistd.h>
+#endif
 
-std::ostream& operator<<(std::ostream& lhs, const Interface& rhs) {
-    lhs << "friendly name: " << rhs.friendly_name << "\n";
-    lhs << "ipv4: " << rhs.ipv_4_unicast_address << "\n";
-    lhs << "ipv6: " << rhs.ipv_6_unicast_address << "\n";
 
-    return lhs;
-}
+#if defined(_WIN32)
+#include <winsock2.h>
+#if !defined(IPV6_V6ONLY)
+#define IPV6_V6ONLY 27
+#endif
+typedef int SENDRESULT;
+typedef int SENDSIZE;
+#else
+typedef int SOCKET;
+typedef ssize_t SENDRESULT;
+typedef size_t SENDSIZE;
+#endif
 
-}
-} // Koi::Network
+
+#endif //KOINET_SYSTEM_INCLUDES_HPP
