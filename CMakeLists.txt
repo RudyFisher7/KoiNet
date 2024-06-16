@@ -16,7 +16,9 @@ set(LIBS "")
 set(SOURCES
     source/interface.cpp
     source/os/common/internal.cpp
-    source/socket_selector.cpp
+    source/manager.cpp
+    source/peer.cpp
+    source/tcp_server.cpp
 )
 
 set(HEADERS
@@ -25,7 +27,9 @@ set(HEADERS
     include/network/typedefs.hpp
     include/network/enums.hpp
     include/network/interface.hpp
-    include/network/socket_selector.hpp
+    include/network/manager.hpp
+    include/network/peer.hpp
+    include/network/tcp_server.hpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

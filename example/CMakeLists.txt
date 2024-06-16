@@ -37,3 +37,15 @@ add_executable(${KOI_NET_TCP_CLIENT_EXAMPLE}
 target_link_libraries(${KOI_NET_TCP_CLIENT_EXAMPLE} PRIVATE
     ${LIBS}
 )
+
+
+
+set(KOI_NET_TCP_SERVER_EXAMPLE KoiNetTcpServerExample)
+
+add_executable(${KOI_NET_TCP_SERVER_EXAMPLE}
+    koi_tcp_server_example.cpp
+)
+
+target_link_libraries(${KOI_NET_TCP_SERVER_EXAMPLE} PRIVATE
+    ${LIBS}
+)

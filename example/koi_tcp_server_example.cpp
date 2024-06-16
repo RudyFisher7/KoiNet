@@ -23,46 +23,27 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_ENUMS_HPP
-#define KOI_NETWORK_ENUMS_HPP
-
-namespace Koi { namespace Network {
-
-enum SelectFlag: int {
-    SOCKET_HANDLER_FLAG_NONE = 0,
-    SOCKET_HANDLER_FLAG_READ = 1 >> 0,
-    SOCKET_HANDLER_FLAG_WRITE = 1 >> 1,
-    SOCKET_HANDLER_FLAG_EXCEPTION = 1 >> 2,
-    SOCKET_HANDLER_FLAG_ALL = 0xfffffff
-};
+#include <network/manager.hpp>
+#include <network/tcp_server.hpp>
+#include <network/enums.hpp>
 
 
-enum Error : int {
-    SOCKET_PEER_ERROR_OK = 0,
-    SOCKET_PEER_ERROR_PROTOCOL,
-    SOCKET_PEER_ERROR_INVALID_SOCKET,
-    SOCKET_PEER_ERROR_SIZE
-};
+int main() {
+    bool is_running = true;
+    Koi::Network::Manager::startup();
 
+    Koi::Network::TcpServer server(
+            Koi::Network::SelectFlag::SOCKET_HANDLER_FLAG_ALL,
+            10
+    );
 
-enum Mode : int {
-    SOCKET_PEER_MODE_INVALID = -1,
-    SOCKET_PEER_MODE_MIN = 0,
-    SOCKET_PEER_MODE_CLIENT = SOCKET_PEER_MODE_MIN,
-    SOCKET_PEER_MODE_SERVER,
-    SOCKET_PEER_MODE_SIZE
-};
+    Koi::Network::TimeValue timeout { 0, 10000 };
+    while(is_running) {
+        if (Koi::Network::Manager::select_handles(&timeout) < 0) {
+            is_running = false;
+        }
+    }
 
-
-enum Protocol : int {
-    SOCKET_PEER_PROTOCOL_INVALID = -1,
-    SOCKET_PEER_PROTOCOL_MIN = 0,
-    SOCKET_PEER_PROTOCOL_STREAM = SOCKET_PEER_PROTOCOL_MIN,
-    SOCKET_PEER_PROTOCOL_DATAGRAM,
-    SOCKET_PEER_PROTOCOL_SIZE
-};
-
+    Koi::Network::Manager::cleanup();
+    return 0;
 }
-}
-
-#endif //KOI_NETWORK_ENUMS_HPP

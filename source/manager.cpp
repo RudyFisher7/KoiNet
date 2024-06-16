@@ -23,49 +23,59 @@ SOFTWARE.
 */
 
 
-#include "network/socket_selector.hpp"
+#include "network/manager.hpp"
 
 #include "network/os/internal.hpp"
 
 
 namespace Koi { namespace Network {
 
-SocketSet SocketSelector::_master_read_set {};
-SocketSet SocketSelector::_master_write_set {};
-SocketSet SocketSelector::_master_exception_set {};
+SocketSet Manager::_master_read_set {};
+SocketSet Manager::_master_write_set {};
+SocketSet Manager::_master_exception_set {};
 
-SocketSet SocketSelector::_read_set {};
-SocketSet SocketSelector::_write_set {};
-SocketSet SocketSelector::_exception_set {};
+SocketSet Manager::_read_set {};
+SocketSet Manager::_write_set {};
+SocketSet Manager::_exception_set {};
 
-Socket SocketSelector::_largest_handle = 0;
+Socket Manager::_largest_handle = 0;
 
 
-Socket SocketSelector::get_largest_handle() {
+Socket Manager::get_largest_handle() {
     return _largest_handle;
 }
 
 
-void SocketSelector::add_handle_for(Socket handle, int flags) {
-    if (SOCKET_HANDLER_FLAG_NONE != flags) {
+void Manager::startup() {
+    Internal::startup();
+}
+
+
+void Manager::cleanup() {
+    Internal::cleanup();
+}
+
+
+void Manager::add_handle_for(Socket handle, int select_flags) {
+    if (SOCKET_HANDLER_FLAG_NONE != select_flags) {
         _set_largest_handle(handle);
 
-        if ((SOCKET_HANDLER_FLAG_READ & flags) > 0) {
+        if ((SOCKET_HANDLER_FLAG_READ & select_flags) > 0) {
             Internal::set_socket_in_set(handle, &_master_read_set);
         }
 
-        if ((SOCKET_HANDLER_FLAG_WRITE & flags) > 0) {
+        if ((SOCKET_HANDLER_FLAG_WRITE & select_flags) > 0) {
             Internal::set_socket_in_set(handle, &_master_write_set);
         }
 
-        if ((SOCKET_HANDLER_FLAG_EXCEPTION & flags) > 0) {
+        if ((SOCKET_HANDLER_FLAG_EXCEPTION & select_flags) > 0) {
             Internal::set_socket_in_set(handle, &_master_exception_set);
         }
     }
 }
 
 
-int SocketSelector::select_handles(TimeValue* timeout) {
+int Manager::select_handles(TimeValue* timeout) {
     int result = 0;
 
     if (_largest_handle > 0) {
@@ -86,7 +96,7 @@ int SocketSelector::select_handles(TimeValue* timeout) {
 }
 
 
-int SocketSelector::get_handle_readiness(Socket handle) {
+int Manager::get_handle_readiness(Socket handle) {
     int result = 0;
 
     if (Internal::is_socket_ready_in_set(handle, &_read_set)) {
@@ -105,7 +115,7 @@ int SocketSelector::get_handle_readiness(Socket handle) {
 }
 
 
-void SocketSelector::_set_largest_handle(Socket handle) {
+void Manager::_set_largest_handle(Socket handle) {
     _largest_handle = _largest_handle < handle ? handle : _largest_handle;
 }
 

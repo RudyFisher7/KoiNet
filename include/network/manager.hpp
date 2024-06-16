@@ -23,25 +23,17 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_SOCKET_HANDLER_HPP
-#define KOI_NETWORK_SOCKET_HANDLER_HPP
+#ifndef KOI_NETWORK_MANAGER_HPP
+#define KOI_NETWORK_MANAGER_HPP
 
 
 #include "network/typedefs.hpp"
+#include "network/enums.hpp"
 
 
 namespace Koi { namespace Network {
 
-class SocketSelector final {
-public:
-    enum Flag: int {
-        SOCKET_HANDLER_FLAG_NONE = 0,
-        SOCKET_HANDLER_FLAG_READ = 1 >> 0,
-        SOCKET_HANDLER_FLAG_WRITE = 1 >> 1,
-        SOCKET_HANDLER_FLAG_EXCEPTION = 1 >> 2
-    };
-
-
+class Manager final {
 private:
     static SocketSet _master_read_set;
     static SocketSet _master_write_set;
@@ -63,15 +55,19 @@ public:
     static Socket get_largest_handle();
 
 
+    static void startup();
+    static void cleanup();
+
+
     /**
      * @brief Adds the given socket handle to the SocketSelector's underlying
      * SocketSets based on the flags provided.
      * @param handle The socket handle.
-     * @param flags The flags that determine with SocketSets the handle should
+     * @param select_flags The flags that determine with SocketSets the handle should
      * be added to.
-     * This value should be a lor-ed value of SocketSelector::Flag enum values.
+     * This value should be a lor-ed value of SelectFlag enum values.
      */
-    static void add_handle_for(Socket handle, int flags);
+    static void add_handle_for(Socket handle, int select_flags);
 
 
     /**
@@ -87,7 +83,7 @@ public:
      * @brief Gets a lor-ed value of the readiness of the given socket value.
      * @param handle The socket handle to check readiness of.
      * @return The lor-ed readiness value. This will be lor-ed
-     * SocketSelector::Flag enum values.
+     * SelectFlag enum values.
      */
     static int get_handle_readiness(Socket handle);
 
@@ -107,4 +103,4 @@ private:
 }
 
 
-#endif //KOI_NETWORK_SOCKET_HANDLER_HPP
+#endif //KOI_NETWORK_MANAGER_HPP
