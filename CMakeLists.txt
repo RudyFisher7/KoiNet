@@ -30,6 +30,7 @@ set(HEADERS
     include/network/manager.hpp
     include/network/peer.hpp
     include/network/tcp_server.hpp
+    include/network/log/log.hpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")

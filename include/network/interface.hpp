@@ -27,8 +27,8 @@ SOFTWARE.
 #define KOI_NETWORK_INTERFACE_HPP
 
 
-#include <string>
 #include <iostream>
+#include <string>
 
 
 namespace Koi { namespace Network {

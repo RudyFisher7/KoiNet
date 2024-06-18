@@ -54,20 +54,20 @@ void Manager::cleanup() const {
 
 
 void Manager::add_handle_for(Socket handle, int select_flags) {
-    if (SOCKET_HANDLER_FLAG_NONE != select_flags) {
+    if (NETWORK_SELECT_FLAG_NONE != select_flags) {
         _set_largest_handle(handle);
 
-        if ((SOCKET_HANDLER_FLAG_READ & select_flags) > 0) {
+        if ((NETWORK_SELECT_FLAG_READ & select_flags) > 0) {
             const std::lock_guard<std::mutex> lock(_master_read_set_mutex);
             Internal::set_socket_in_set(handle, &_master_read_set);
         }
 
-        if ((SOCKET_HANDLER_FLAG_WRITE & select_flags) > 0) {
+        if ((NETWORK_SELECT_FLAG_WRITE & select_flags) > 0) {
             const std::lock_guard<std::mutex> lock(_master_read_set_mutex);
             Internal::set_socket_in_set(handle, &_master_write_set);
         }
 
-        if ((SOCKET_HANDLER_FLAG_EXCEPTION & select_flags) > 0) {
+        if ((NETWORK_SELECT_FLAG_EXCEPTION & select_flags) > 0) {
             const std::lock_guard<std::mutex> lock(_master_exception_set_mutex);
             Internal::set_socket_in_set(handle, &_master_exception_set);
         }
@@ -104,15 +104,15 @@ int Manager::get_handle_readiness(Socket handle) {
     int result = 0;
 
     if (_is_handle_ready_in_set(handle, _read_set, _read_set_mutex)) {
-        result |= SOCKET_HANDLER_FLAG_READ;
+        result |= NETWORK_SELECT_FLAG_READ;
     }
 
     if (_is_handle_ready_in_set(handle, _write_set, _write_set_mutex)) {
-        result |= SOCKET_HANDLER_FLAG_WRITE;
+        result |= NETWORK_SELECT_FLAG_WRITE;
     }
 
     if (_is_handle_ready_in_set(handle, _exception_set, _exception_set_mutex)) {
-        result |= SOCKET_HANDLER_FLAG_EXCEPTION;
+        result |= NETWORK_SELECT_FLAG_EXCEPTION;
     }
 
     return result;

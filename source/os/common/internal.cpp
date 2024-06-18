@@ -31,7 +31,7 @@ SOFTWARE.
 namespace Koi {
 namespace Network {
 
-int Internal::_last_error = SOCKET_PEER_ERROR_OK;
+int Internal::_last_error = NETWORK_ERROR_OK;
 
 
 AddressInfo Internal::get_clean_address_info() {

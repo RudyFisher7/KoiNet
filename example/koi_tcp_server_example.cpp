@@ -32,15 +32,16 @@ int main() {
     bool is_running = true;
     Koi::Network::Manager::get_singleton().startup();
 
-    Koi::Network::TcpServer server(
-            Koi::Network::SelectFlag::SOCKET_HANDLER_FLAG_ALL,
-            10
-    );
+    Koi::Network::TcpServer server("::1", "8080", 10);
 
     Koi::Network::TimeValue timeout { 0, 10000 };
     while(is_running) {
         if (Koi::Network::Manager::get_singleton().select_handles(&timeout) < 0) {
             is_running = false;
+        }
+
+        while (server.is_new_connection_ready()) {
+            server.accept_new_connection(Koi::Network::NETWORK_SELECT_FLAG_READ);
         }
     }
 
