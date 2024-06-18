@@ -27,7 +27,7 @@ TcpServer::TcpServer(int select_flags, int connection_queue_size) : Peer(select_
 
     Internal::listen_on_handle(_handle, connection_queue_size);
 
-    Manager::add_handle_for(_handle, select_flags);
+    Manager::get_singleton().add_handle_for(_handle, select_flags);
 }
 
 
@@ -60,7 +60,7 @@ Socket TcpServer::accept_new_connection(int select_flags) {
 
     _remote_handles.insert(result);
 
-    Manager::add_handle_for(result, select_flags);
+    Manager::get_singleton().add_handle_for(result, select_flags);
 
     return result;
 }

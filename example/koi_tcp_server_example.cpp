@@ -30,7 +30,7 @@ SOFTWARE.
 
 int main() {
     bool is_running = true;
-    Koi::Network::Manager::startup();
+    Koi::Network::Manager::get_singleton().startup();
 
     Koi::Network::TcpServer server(
             Koi::Network::SelectFlag::SOCKET_HANDLER_FLAG_ALL,
@@ -39,11 +39,11 @@ int main() {
 
     Koi::Network::TimeValue timeout { 0, 10000 };
     while(is_running) {
-        if (Koi::Network::Manager::select_handles(&timeout) < 0) {
+        if (Koi::Network::Manager::get_singleton().select_handles(&timeout) < 0) {
             is_running = false;
         }
     }
 
-    Koi::Network::Manager::cleanup();
+    Koi::Network::Manager::get_singleton().cleanup();
     return 0;
 }
