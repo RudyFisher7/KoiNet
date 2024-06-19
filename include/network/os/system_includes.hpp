@@ -33,6 +33,7 @@ SOFTWARE.
 #endif
 #include <winsock2.h>
 #include <ws2tcpip.h>
+#include <winbase.h>
 #else //Unix
 #include <cerrno>
 #include <sys/types.h>

@@ -36,12 +36,13 @@ int main() {
 
     Koi::Network::TimeValue timeout { 0, 10000 };
     while(is_running) {
-        if (Koi::Network::Manager::get_singleton().select_handles(&timeout) < 0) {
+        int select_result = Koi::Network::Manager::get_singleton().select_handles(&timeout);
+        if (select_result > 0) {
+            while (server.is_new_connection_ready()) {
+                server.accept_new_connection(Koi::Network::NETWORK_SELECT_FLAG_READ);
+            }
+        } else if (select_result < 0) {
             is_running = false;
-        }
-
-        while (server.is_new_connection_ready()) {
-            server.accept_new_connection(Koi::Network::NETWORK_SELECT_FLAG_READ);
         }
     }
 

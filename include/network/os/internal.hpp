@@ -27,7 +27,7 @@ SOFTWARE.
 #define KOI_NETWORK_SERVER_HPP
 
 
-#include "system_includes.hpp"
+#include "network/os/system_includes.hpp"
 #include "network/enums.hpp"
 #include "network/typedefs.hpp"
 #include "network/interface.hpp"
@@ -90,28 +90,6 @@ public:
     );
 
 
-    //todo:: test the validity of this template
-    template<typename T>
-    static int set_handle_option(
-            Socket handle,
-            int level,
-            int option_name,
-            const T& option_value
-    ) {
-        int result = 0;
-
-        result = setsockopt(
-                handle,
-                level,
-                option_name,
-                static_cast<const char*>(&option_value),
-                sizeof(T)
-        );
-
-        return result;
-    }
-
-
     static int bind_locally(
             Socket handle,
             SocketAddress* address,
@@ -161,6 +139,7 @@ public:
             SocketAddressSize destination_address_size
     );
 
+
     static SendReceiveResult receive_from(
             Socket handle,
             char* buffer,
@@ -195,10 +174,16 @@ public:
     static bool is_socket_valid(Socket socket_handle);
 
 
-    static int get_last_errno();
-
-
     static int close_handle(Socket handle);
+
+
+    static Error get_last_error();
+
+
+    static const char* get_last_error_string();
+
+
+    static int get_last_error_nonportable();
 
 
     Internal() = delete;

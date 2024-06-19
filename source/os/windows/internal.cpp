@@ -30,8 +30,7 @@ SOFTWARE.
 #include <codecvt>
 
 
-namespace Koi {
-namespace Network {
+namespace Koi { namespace Network {
 
 static WSADATA _wsa_data;
 static bool _is_wsa_started = false;
@@ -141,19 +140,34 @@ bool Internal::is_socket_valid(Socket socket_handle) {
 }
 
 
-int Internal::get_last_errno() {
+int Internal::close_handle(Socket handle) {
     int result = 0;
 
-    result = WSAGetLastError();
+    result = closesocket(handle);
 
     return result;
 }
 
 
-int Internal::close_handle(Socket handle) {
+Error Internal::get_last_error() {
+    Error result = NETWORK_ERROR_OK;
+
+    switch (WSAGetLastError()) {
+        case WSAEWOULDBLOCK:
+            result = NETWORK_ERROR_WOULD_BLOCK;
+            break;
+        default:
+            break;
+    }
+
+    return result;
+}
+
+
+int Internal::get_last_error_nonportable() {
     int result = 0;
 
-    result = closesocket(handle);
+    result = WSAGetLastError();
 
     return result;
 }

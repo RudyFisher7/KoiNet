@@ -34,8 +34,8 @@ SOFTWARE.
 #include <sys/socket.h>
 #include <sys/types.h>
 
-namespace Koi {
-namespace Network {
+
+namespace Koi { namespace Network {
 
 int Internal::get_interfaces(std::vector<Interface>& out_interfaces) {
     int result = 0;
@@ -89,19 +89,34 @@ bool Internal::is_socket_valid(Socket socket_handle) {
 }
 
 
-int Internal::get_last_errno() {
+int Internal::close_handle(Socket handle) {
     int result = 0;
 
-    result = errno;
+    result = close(handle);
 
     return result;
 }
 
 
-int Internal::close_handle(Socket handle) {
+Error Internal::get_last_error() {
+    Error result = NETWORK_ERROR_OK;
+
+    switch (errno) {
+        case EWOULDBLOCK:
+            result = NETWORK_ERROR_WOULD_BLOCK;
+            break;
+        default:
+            break;
+    }
+
+    return result;
+}
+
+
+int Internal::get_last_error_nonportable() {
     int result = 0;
 
-    result = close(handle);
+    result = errno;
 
     return result;
 }

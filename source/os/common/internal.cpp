@@ -23,7 +23,9 @@ SOFTWARE.
 */
 
 
-#include "network/os/internal.hpp"
+#include "../../../include/network/os/internal.hpp"
+
+#include "../../../include/network/log/log.hpp"
 
 #include <cstring>
 
@@ -292,6 +294,32 @@ int Internal::select_handles(
     );
 
     return result;
+}
+
+
+const char* Internal::get_last_error_string() {
+#if defined(_WIN32)
+    static char result[256];
+
+    FormatMessage(
+            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            WSAGetLastError(),
+            0,
+            result,
+            256,
+            nullptr
+    );
+
+    char* newline = strrchr(result, '\n');
+    if (newline != nullptr) {
+        *newline = 0;
+    }
+
+    return result;
+#else
+    return strerror(errno);
+#endif
 }
 
 }

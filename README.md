@@ -17,3 +17,6 @@ This is an exercise to better learn best practices with low-level network progra
 7. Use C++ compliant with standard.
 8. Keep binary size small.
 9. No warnings if possible.
+
+# Inspiration
+*Koi are both pleasing to the eye and resilient.*
