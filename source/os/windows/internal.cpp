@@ -115,7 +115,7 @@ void Internal::startup() {
         result = error;
     }
 
-    _last_error = result;//fixme:: use enum value probably
+    //fixme:: use enum value probably
 }
 
 
@@ -126,8 +126,7 @@ void Internal::cleanup() {
         result = WSACleanup();
         _is_wsa_started = false;
     }
-
-    _last_error = result;//fixme:: use enum value probably
+    //fixme:: use enum value probably
 }
 
 
@@ -150,17 +149,7 @@ int Internal::close_handle(Socket handle) {
 
 
 Error Internal::get_last_error() {
-    Error result = NETWORK_ERROR_OK;
-
-    switch (WSAGetLastError()) {
-        case WSAEWOULDBLOCK:
-            result = NETWORK_ERROR_WOULD_BLOCK;
-            break;
-        default:
-            break;
-    }
-
-    return result;
+    return convert_system_error(WSAGetLastError());
 }
 
 
@@ -168,6 +157,121 @@ int Internal::get_last_error_nonportable() {
     int result = 0;
 
     result = WSAGetLastError();
+
+    return result;
+}
+
+
+Error Internal::convert_system_error(int system_error_value) {
+    Error result = NETWORK_ERROR_UNKNOWN;
+
+    switch (system_error_value) {
+        case WSANOTINITIALISED:
+            result = NETWORK_ERROR_NOT_INITIALIZED;
+            break;
+        case WSAEWOULDBLOCK:
+            result = NETWORK_ERROR_WOULD_BLOCK;
+            break;
+        case WSAEINPROGRESS:
+            result = NETWORK_ERROR_IN_PROGRESS;
+            break;
+        case WSATRY_AGAIN:
+            result = NETWORK_ERROR_TRY_AGAIN;
+            break;
+        case WSAEINVAL:
+            result = NETWORK_ERROR_INVALID;
+            break;
+        case WSANO_RECOVERY:
+            result = NETWORK_ERROR_NO_RECOVERY;
+            break;
+        case WSAEAFNOSUPPORT:
+            result = NETWORK_ERROR_FAMILY_NOT_SUPPORTED;
+            break;
+        case WSA_NOT_ENOUGH_MEMORY:
+            result = NETWORK_ERROR_NOT_ENOUGH_MEMORY;
+            break;
+        case WSAHOST_NOT_FOUND:
+            result = NETWORK_ERROR_HOST_UNRESOLVABLE;
+            break;
+        case WSATYPE_NOT_FOUND:
+            result = NETWORK_ERROR_SERVICE_NOT_SUPPORTED;
+            break;
+        case WSAEOPNOTSUPP:
+            result = NETWORK_ERROR_OPERATION_NOT_SUPPORTED;
+            break;
+        case WSAESOCKTNOSUPPORT:
+            result = NETWORK_ERROR_SOCKET_TYPE_NOT_SUPPORTED;
+            break;
+        case WSAEFAULT:
+            result = NETWORK_ERROR_FAULT;
+            break;
+        case WSAENOBUFS:
+            result = NETWORK_ERROR_NO_BUFFER_SPACE;
+            break;
+        case WSAENETDOWN:
+            result = NETWORK_ERROR_NETWORK_DOWN;
+            break;
+        case WSAENETRESET:
+            result = NETWORK_ERROR_NETWORK_RESET;
+            break;
+        case WSAECONNRESET:
+            result = NETWORK_ERROR_CONNECTION_RESET;
+            break;
+        case WSAENOTCONN:
+            result = NETWORK_ERROR_NOT_CONNECTED;
+            break;
+        case WSAECONNABORTED:
+            result = NETWORK_ERROR_CONNECTION_ABORTED;
+            break;
+        case WSAESHUTDOWN:
+            result = NETWORK_ERROR_CONNECTION_SHUTDOWN;
+            break;
+        case WSAEMSGSIZE:
+            result = NETWORK_ERROR_MESSAGE_SIZE;
+            break;
+        case WSAENOPROTOOPT:
+            result = NETWORK_ERROR_OPTION_NOT_SUPPORTED;
+            break;
+        case WSAEADDRINUSE:
+            result = NETWORK_ERROR_ADDRESS_IN_USE;
+            break;
+        case WSAEADDRNOTAVAIL:
+            result = NETWORK_ERROR_ADDRESS_NOT_AVAILABLE;
+            break;
+        case WSAENOTSOCK:
+            result = NETWORK_ERROR_NOT_A_SOCKET;
+            break;
+        case WSAEACCES:
+            result = NETWORK_ERROR_ACCESS_FORBIDDEN;
+            break;
+        case WSAEINTR:
+            result = NETWORK_ERROR_INTERRUPTED;
+            break;
+        case WSAEALREADY:
+            result = NETWORK_ERROR_ALREADY;
+            break;
+        case WSAEISCONN:
+            result = NETWORK_ERROR_IS_CONNECTED;
+            break;
+        case WSAENETUNREACH:
+            result = NETWORK_ERROR_NETWORK_UNREACHABLE;
+            break;
+        case WSAEHOSTUNREACH:
+            result = NETWORK_ERROR_HOST_UNREACHABLE;
+            break;
+        case WSAETIMEDOUT:
+            result = NETWORK_ERROR_TIMED_OUT;
+            break;
+        case WSAEMFILE:
+            result = NETWORK_ERROR_NO_MORE_SOCKETS_AVAILABLE;
+            break;
+        case WSAEDESTADDRREQ:
+            result = NETWORK_ERROR_ADDRESS_REQUIRED;
+            break;
+        default:
+            result = NETWORK_ERROR_UNKNOWN;
+            break;
+    }
 
     return result;
 }

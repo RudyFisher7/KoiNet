@@ -4,6 +4,13 @@ A simple portable C++ networking library designed for video games.
 # Project Status
 Very WIP.
 
+# Compatability
+Any system with Unix socket API or WinSock2 API, and >= C++11 should work.
+## Tested Compilers
+1. GNU gcc (with WSL)
+2. MSVC
+3. MinGW
+
 # About
 This is an exercise to better learn best practices with low-level network programming.
 

@@ -32,6 +32,7 @@ SOFTWARE.
 #include "network/typedefs.hpp"
 #include "network/interface.hpp"
 
+#include <ostream>
 #include <string>
 #include <vector>
 
@@ -39,9 +40,6 @@ SOFTWARE.
 namespace Koi { namespace Network {
 
 class Internal final {
-private:
-    static int _last_error;
-
 public:
     static void startup();
 
@@ -49,7 +47,6 @@ public:
     static void cleanup();
 
 
-    //fixme:: don't use stl
     static int get_interfaces(std::vector<Interface>& out_interfaces);
 
 
@@ -180,7 +177,7 @@ public:
     static Error get_last_error();
 
 
-    static const char* get_last_error_string();
+    static void print_last_error_string(std::ostream& lhs);
 
 
     static int get_last_error_nonportable();
@@ -199,6 +196,9 @@ public:
 
 
     Internal& operator=(Internal&& rhs) = delete;
+
+private:
+    static Error convert_system_error(int system_error_value);
 };
 
 }

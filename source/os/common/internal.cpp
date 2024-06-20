@@ -33,12 +33,9 @@ SOFTWARE.
 namespace Koi {
 namespace Network {
 
-int Internal::_last_error = NETWORK_ERROR_OK;
-
-
 AddressInfo Internal::get_clean_address_info() {
     AddressInfo result {};
-    memset(&result, 0, sizeof(result));//fixme:: error handling?
+    memset(&result, 0, sizeof(result));
     return result;
 }
 
@@ -51,13 +48,16 @@ int Internal::get_address_info(
 ) {
     int result = 0;
 
-    result = getaddrinfo(
+    int error = getaddrinfo(
             hostname,
             port,
             hints,
             out_result
     );
-    //fixme:: error stuff
+
+    if (error != 0) {
+        result = convert_system_error(error);
+    }
 
     return result;
 }
@@ -74,7 +74,7 @@ int Internal::get_name_info(
 ) {
     int result = 0;
 
-    result = getnameinfo(
+    int error = getnameinfo(
             socket_address,
             socket_length,
             out_host,
@@ -83,13 +83,20 @@ int Internal::get_name_info(
             service_length,
             flags
     );
-    //fixme:: error stuff
+
+    if (error != 0) {
+        result = convert_system_error(error);
+    }
 
     return result;
 }
 
 
 void Internal::free_address_info(AddressInfo* address) {
+    if (address == nullptr) {
+        return;
+    }
+
     freeaddrinfo(address);
     address = nullptr;
 }
@@ -136,7 +143,11 @@ int Internal::bind_locally(
 ) {
     int result = 0;
 
-    result = bind(handle, address, address_length);
+    int error = bind(handle, address, address_length);
+
+    if (error != 0) {
+        result = get_last_error();
+    }
 
     return result;
 }
@@ -149,7 +160,11 @@ int Internal::bind_remotely(
 ) {
     int result = 0;
 
-    result = connect(handle, address, address_length);
+    int error = connect(handle, address, address_length);
+
+    if (error != 0) {
+        result = get_last_error();
+    }
 
     return result;
 }
@@ -297,9 +312,9 @@ int Internal::select_handles(
 }
 
 
-const char* Internal::get_last_error_string() {
+void Internal::print_last_error_string(std::ostream& lhs) {
 #if defined(_WIN32)
-    static char result[256];
+    char result[256];
 
     FormatMessage(
             FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
@@ -316,9 +331,9 @@ const char* Internal::get_last_error_string() {
         *newline = 0;
     }
 
-    return result;
+    lhs << result;
 #else
-    return strerror(errno);
+    lhs << strerror(errno);
 #endif
 }
 

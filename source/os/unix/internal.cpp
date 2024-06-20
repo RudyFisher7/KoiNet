@@ -99,17 +99,7 @@ int Internal::close_handle(Socket handle) {
 
 
 Error Internal::get_last_error() {
-    Error result = NETWORK_ERROR_OK;
-
-    switch (errno) {
-        case EWOULDBLOCK:
-            result = NETWORK_ERROR_WOULD_BLOCK;
-            break;
-        default:
-            break;
-    }
-
-    return result;
+    return convert_system_error(errno);
 }
 
 
@@ -117,6 +107,129 @@ int Internal::get_last_error_nonportable() {
     int result = 0;
 
     result = errno;
+
+    return result;
+}
+
+
+Error Internal::convert_system_error(int system_error_value) {
+    Error result = NETWORK_ERROR_UNKNOWN;
+
+    switch (system_error_value) {
+        case EWOULDBLOCK: // same as EAGAIN
+            result = NETWORK_ERROR_WOULD_BLOCK;
+            break;
+        case EAI_AGAIN:
+            result = NETWORK_ERROR_TRY_AGAIN;
+            break;
+        case EAI_BADFLAGS:
+        case EINVAL:
+            result = NETWORK_ERROR_INVALID;
+            break;
+        case EAI_FAIL:
+            result = NETWORK_ERROR_NO_RECOVERY;
+            break;
+        case EAFNOSUPPORT:
+        case EAI_ADDRFAMILY:
+            result = NETWORK_ERROR_FAMILY_NOT_SUPPORTED;
+            break;
+        case EAI_MEMORY:
+            result = NETWORK_ERROR_NOT_ENOUGH_MEMORY;
+            break;
+        case EAI_NONAME:
+            result = NETWORK_ERROR_HOST_UNRESOLVABLE;
+            break;
+        case EAI_SERVICE:
+            result = NETWORK_ERROR_SERVICE_NOT_SUPPORTED;
+            break;
+        case EOPNOTSUPP:
+            result = NETWORK_ERROR_OPERATION_NOT_SUPPORTED;
+            break;
+        case EAI_SOCKTYPE:
+            result = NETWORK_ERROR_SOCKET_TYPE_NOT_SUPPORTED;
+            break;
+        case EAI_OVERFLOW:
+            result = NETWORK_ERROR_BUFFER_OVERFLOW;
+            break;
+        case EAI_SYSTEM:
+            result = NETWORK_ERROR_CHECK_SYSTEM_ERROR;
+        case EBADF:
+            result = NETWORK_ERROR_INVALID_SOCKET;
+            break;
+        case ENOTSOCK:
+            result = NETWORK_ERROR_NOT_A_SOCKET;
+            break;
+        case EADDRINUSE:
+            result = NETWORK_ERROR_ADDRESS_IN_USE;
+            break;
+        case EDOM:
+            result = NETWORK_ERROR_OUT_OF_DOMAIN;
+            break;
+        case EISCONN:
+            result = NETWORK_ERROR_IS_CONNECTED;
+            break;
+        case ENOPROTOOPT:
+            result = NETWORK_ERROR_OPTION_NOT_SUPPORTED;
+            break;
+        case EACCES:
+            result = NETWORK_ERROR_ACCESS_FORBIDDEN;
+            break;
+        case ENAMETOOLONG:
+            result = NETWORK_ERROR_ADDRESS_TOO_LONG;
+            break;
+        case ENOTDIR:
+        case ENOENT:
+            result = NETWORK_ERROR_NOT_A_FILE_OR_DIRECTORY;
+            break;
+        case ELOOP:
+            result = NETWORK_ERROR_LOOP;
+            break;
+        case ENOMEM:
+            result = NETWORK_ERROR_NO_BUFFER_SPACE;
+            break;
+        case EMFILE:
+            result = NETWORK_ERROR_NO_MORE_SOCKETS_AVAILABLE_IN_PROCESS;
+            break;
+        case ENFILE:
+            result = NETWORK_ERROR_NO_MORE_SOCKETS_AVAILABLE;
+            break;
+        case EROFS:
+            result = NETWORK_ERROR_READONLY_FILE_SYSTEM;
+            break;
+        case ECONNREFUSED:
+            result = NETWORK_ERROR_CONNECTION_REFUSED;
+            break;
+        case ECONNABORTED:
+            result = NETWORK_ERROR_CONNECTION_ABORTED;
+            break;
+        case EALREADY:
+            result = NETWORK_ERROR_ALREADY;
+            break;
+        case EPERM:
+            result = NETWORK_ERROR_PERMISSION_DENIED;
+            break;
+        case ETIMEDOUT:
+            result = NETWORK_ERROR_TIMED_OUT;
+            break;
+        case EPROTOTYPE:
+            result = NETWORK_ERROR_PROTOCOL_TYPE_NOT_SUPPORTED;
+            break;
+        case ENETUNREACH:
+            result = NETWORK_ERROR_NETWORK_UNREACHABLE;
+            break;
+        case EMSGSIZE:
+            result = NETWORK_ERROR_MESSAGE_SIZE;
+            break;
+        case EDESTADDRREQ:
+            result = NETWORK_ERROR_ADDRESS_REQUIRED;
+            break;
+        case EPIPE:
+            result = NETWORK_ERROR_CONNECTION_SHUTDOWN;
+            break;
+        default:
+            result = NETWORK_ERROR_UNKNOWN;
+            break;
+    }
 
     return result;
 }

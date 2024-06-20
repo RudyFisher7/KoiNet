@@ -39,6 +39,7 @@ typedef int Socket;
 typedef ssize_t SendReceiveResult;
 typedef size_t BufferSize;
 constexpr const Socket INVALID_SOCKET = -1;
+constexpr const Socket SOCKET_ERROR = -1;
 #endif
 
 typedef addrinfo AddressInfo;
