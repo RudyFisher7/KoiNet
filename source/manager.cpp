@@ -75,6 +75,28 @@ void Manager::add_handle_for(Socket handle, int select_flags) {
 }
 
 
+void Manager::remove_handle_from(Socket handle, int select_flags) {
+    if (NETWORK_SELECT_FLAG_NONE != select_flags) {
+        _set_largest_handle(handle);//fixme:: if handle == largest, then decrement somehow
+
+        if ((NETWORK_SELECT_FLAG_READ & select_flags) > 0) {
+            const std::lock_guard<std::mutex> lock(_master_read_set_mutex);
+            Internal::clear_socket_from_set(handle, &_master_read_set);
+        }
+
+        if ((NETWORK_SELECT_FLAG_WRITE & select_flags) > 0) {
+            const std::lock_guard<std::mutex> lock(_master_read_set_mutex);
+            Internal::clear_socket_from_set(handle, &_master_write_set);
+        }
+
+        if ((NETWORK_SELECT_FLAG_EXCEPTION & select_flags) > 0) {
+            const std::lock_guard<std::mutex> lock(_master_exception_set_mutex);
+            Internal::clear_socket_from_set(handle, &_master_exception_set);
+        }
+    }
+}
+
+
 int Manager::select_handles(TimeValue* timeout) {
     int result = 0;
 

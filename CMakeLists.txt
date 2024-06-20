@@ -18,7 +18,9 @@ set(SOURCES
     source/os/common/internal.cpp
     source/manager.cpp
     source/peer.cpp
+    source/tcp_client.cpp
     source/tcp_server.cpp
+    source/log/log.cpp
 )
 
 set(HEADERS
@@ -29,6 +31,7 @@ set(HEADERS
     include/network/interface.hpp
     include/network/manager.hpp
     include/network/peer.hpp
+    include/network/tcp_client.hpp
     include/network/tcp_server.hpp
     include/network/log/log.hpp
 )
@@ -42,7 +45,7 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     list(APPEND SOURCES
         source/os/windows/internal.cpp
     )
-elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")
+elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")#fixme:: allow other platforms
     list(APPEND SOURCES
         source/os/unix/internal.cpp
     )

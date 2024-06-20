@@ -28,6 +28,7 @@ SOFTWARE.
 #include "../../../include/network/log/log.hpp"
 
 #include <cstring>
+#include <ostream>
 
 
 namespace Koi {
@@ -277,7 +278,7 @@ void Internal::set_socket_in_set(Socket handle, SocketSet* set) {
 }
 
 
-void Internal::clear_socket_set(Socket handle, SocketSet* set) {
+void Internal::clear_socket_from_set(Socket handle, SocketSet* set) {
     FD_CLR(handle, set);
 }
 
@@ -312,7 +313,7 @@ int Internal::select_handles(
 }
 
 
-void Internal::print_last_error_string(std::ostream& lhs) {
+void Internal::print_last_error_string() {
 #if defined(_WIN32)
     char result[256];
 
@@ -331,9 +332,9 @@ void Internal::print_last_error_string(std::ostream& lhs) {
         *newline = 0;
     }
 
-    lhs << result;
+    std::cout << result << std::endl;
 #else
-    lhs << strerror(errno);
+    std::cout << strerror(errno) << std::endl;
 #endif
 }
 

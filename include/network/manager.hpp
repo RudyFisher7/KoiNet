@@ -88,6 +88,7 @@ public:
      * This value should be a lor-ed value of SelectFlag enum values.
      */
     void add_handle_for(Socket handle, int select_flags);
+    void remove_handle_from(Socket handle, int select_flags);
 
 
     /**

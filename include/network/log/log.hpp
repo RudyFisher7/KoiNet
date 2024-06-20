@@ -26,6 +26,7 @@ SOFTWARE.
 #ifndef KOI_NETWORK_LOG_HPP
 #define KOI_NETWORK_LOG_HPP
 
+//fixme:: define in build system
 #define ENABLE_KOI_NET_LOG 1
 
 #ifdef ENABLE_KOI_NET_LOG
@@ -34,12 +35,40 @@ SOFTWARE.
 #include <string>
 
 
-#define KOI_NET_LOG(message) std::cout << "KoiNet Log:\n\t" << message << "\n\t\t\t"\
-    << __FILE__ << ":" << __LINE__ << std::endl
+#define KOI_NET_LOG(message) Koi::Network::Logger::_koi_net_log(message);\
+    KOI_NET_GET_FILE_AND_LINE_INFO(true)
+
+
+#define KOI_NET_ASSERT(condition, arg) Koi::Network::Logger::_koi_net_assert(condition, arg);\
+    KOI_NET_GET_FILE_AND_LINE_INFO(condition)
+
+
+#define KOI_NET_GET_FILE_AND_LINE_INFO(condition)\
+    if (!(condition)) {\
+        std::cout << "\t\t\t" << __FILE__ << ":" << __LINE__ << std::endl;\
+    }
+
+
+namespace Koi { namespace Network {
+
+class Logger final {
+private:
+    static const std::string _PREFIX;
+
+
+public:
+    static void _koi_net_log(const std::string& message);
+    static void _koi_net_assert(bool condition, const std::string& message);
+    static void _koi_net_assert(bool condition, void(*callback)());
+};
+
+}
+}
 
 #else
 
 #define KOI_NET_LOG(message)
+#define KOI_NET_ASSERT(condition, message)
 
 #endif
 

@@ -38,16 +38,13 @@ public:
     //
 
 protected:
-    Socket _local_handle = INVALID_SOCKET;
+    Socket _handle = INVALID_SOCKET;
 
 public:
-    explicit Peer();
-    explicit Peer(int select_flags);
+    Peer() = default;
 
     virtual ~Peer() = default;
-    virtual bool is_ready_to_send() const = 0;
-    virtual bool is_data_ready_to_receive() const = 0;
-    virtual bool is_exception_active() const = 0;
+    virtual int get_readiness() const = 0;
 };
 
 }

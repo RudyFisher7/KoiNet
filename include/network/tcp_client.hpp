@@ -23,8 +23,8 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_TCP_SERVER_HPP
-#define KOI_NETWORK_TCP_SERVER_HPP
+#ifndef KOI_NETWORK_TCP_CLIENT_HPP
+#define KOI_NETWORK_TCP_CLIENT_HPP
 
 
 #include "network/peer.hpp"
@@ -32,45 +32,37 @@ SOFTWARE.
 #include "network/typedefs.hpp"
 #include "network/enums.hpp"
 
-#include <set>
-
 
 namespace Koi { namespace Network {
 
-class TcpServer : public Peer {
-public:
-    //
-
+class TcpClient : public Peer {
 protected:
-    std::set<Socket> _remote_handles;
+    AddressInfo* peer_address_info = nullptr;
 
 public:
     //todo:: support socket options
-    TcpServer(const char* hostname, const char* service, int connection_queue_size);
+    TcpClient(const char* hostname, const char* service, int select_flags);
 
-    TcpServer(const TcpServer& rhs) = delete;
-    TcpServer(TcpServer&& rhs) = delete;
+    TcpClient(const TcpClient& rhs) = delete;
+    TcpClient(TcpClient&& rhs) = delete;
 
-    ~TcpServer();
+    ~TcpClient();
 
-    TcpServer& operator=(const TcpServer& rhs) = delete;
-    TcpServer& operator=(TcpServer&& rhs) = delete;
+    TcpClient& operator=(const TcpClient& rhs) = delete;
+    TcpClient& operator=(TcpClient&& rhs) = delete;
+
 
     int get_readiness() const override;
-    bool is_new_connection_ready() const;
 
-    //todo:: iterator getter
 
-    Socket accept_new_connection(int select_flags);
-    void remove_connection(Socket handle);
+    Error connect();
 
-    SendReceiveResult receive(Socket origin_handle, char* out_buffer, BufferSize buffer_size, int flags);
-    SendReceiveResult send(Socket destination_handle, const char* buffer, BufferSize buffer_size, int flags);
-    SendReceiveResult relay(Socket origin_handle, const char* buffer, BufferSize buffer_size, int flags);
+
+    SendReceiveResult send(const char* buffer, BufferSize buffer_size, int flags);
+    SendReceiveResult receive(char* out_buffer, BufferSize buffer_size, int flags);
 };
 
 }
 }
 
-
-#endif //KOI_NETWORK_TCP_SERVER_HPP
+#endif //KOI_NETWORK_TCP_CLIENT_HPP

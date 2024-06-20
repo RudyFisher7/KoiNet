@@ -32,7 +32,6 @@ SOFTWARE.
 #include "network/typedefs.hpp"
 #include "network/interface.hpp"
 
-#include <ostream>
 #include <string>
 #include <vector>
 
@@ -153,7 +152,7 @@ public:
     static void set_socket_in_set(Socket handle, SocketSet* set);
 
 
-    static void clear_socket_set(Socket handle, SocketSet* set);
+    static void clear_socket_from_set(Socket handle, SocketSet* set);
 
 
     static bool is_socket_ready_in_set(Socket handle, SocketSet* set);
@@ -177,7 +176,7 @@ public:
     static Error get_last_error();
 
 
-    static void print_last_error_string(std::ostream& lhs);
+    static void print_last_error_string();
 
 
     static int get_last_error_nonportable();

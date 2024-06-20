@@ -23,10 +23,31 @@ SOFTWARE.
 */
 
 
-#include "../include/network/peer.hpp"
+#include "../../include/network/log/log.hpp"
 
 
 namespace Koi { namespace Network {
+
+const std::string Logger::_PREFIX = "KoiNet Log:\n\t";
+
+
+void Logger::_koi_net_log(const std::string& message) {
+    std::cout << _PREFIX << message << std::endl;
+}
+
+
+void Logger::_koi_net_assert(bool condition, const std::string& message) {
+    if (!condition) {
+        _koi_net_log(message);
+    }
+}
+
+
+void Logger::_koi_net_assert(bool condition, void(*callback)()) {
+    if (!condition) {
+        callback();
+    }
+}
 
 }
 }
