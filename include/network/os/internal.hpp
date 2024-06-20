@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_SERVER_HPP //fixme::
+#ifndef KOI_NETWORK_SERVER_HPP
 #define KOI_NETWORK_SERVER_HPP
 
 
