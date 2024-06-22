@@ -23,10 +23,23 @@ SOFTWARE.
 */
 
 
-#include "../include/network/peer.hpp"
+#ifndef KOI_NETWORK_PEER_HPP
+#define KOI_NETWORK_PEER_HPP
+
+
+#include "network/typedefs.hpp"
+#include "network/enums.hpp"
 
 
 namespace Koi { namespace Network {
 
+class IPeer {
+public:
+    virtual int get_readiness() const = 0;
+};
+
 }
 }
+
+
+#endif //KOI_NETWORK_PEER_HPP

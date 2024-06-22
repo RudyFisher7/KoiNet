@@ -27,7 +27,7 @@ SOFTWARE.
 #define KOI_NETWORK_TCP_SERVER_HPP
 
 
-#include "network/peer.hpp"
+#include "network/i_peer.hpp"
 
 #include "network/typedefs.hpp"
 #include "network/enums.hpp"
@@ -37,36 +37,60 @@ SOFTWARE.
 
 namespace Koi { namespace Network {
 
-class TcpServer : public Peer {
+class BoundServer : public IPeer {
 public:
-    //
+    typedef std::set<Socket>::const_iterator ConstIterator;
 
 protected:
+    Socket _local_handle = INVALID_SOCKET;
     std::set<Socket> _remote_handles;
 
+    bool _is_listening = false;
+
 public:
+    BoundServer() = default;
     //todo:: support socket options
-    TcpServer(const char* hostname, const char* service, int connection_queue_size);
+    BoundServer(const char* hostname, const char* service, int connection_queue_size, Protocol protocol);
 
-    TcpServer(const TcpServer& rhs) = delete;
-    TcpServer(TcpServer&& rhs) = delete;
+    BoundServer(const BoundServer& rhs) = delete;
+    BoundServer(BoundServer&& rhs) = delete;
 
-    ~TcpServer();
+    /**
+     * @brief Destroys the server object, cleans up its memory, and attempts to
+     * close any socket handles.
+     * @see NOTES of https://www.man7.org/linux/man-pages/man2/close.2.html
+     * @warning This destructor does not retry close()-ing the socket handles.
+     * If the particular system requires a retry on NETWORK_ERROR_INTERRUPTED,
+     * close_handle() can be used to ensure closure before destruction.
+     */
+    ~BoundServer();
 
-    TcpServer& operator=(const TcpServer& rhs) = delete;
-    TcpServer& operator=(TcpServer&& rhs) = delete;
+    BoundServer& operator=(const BoundServer& rhs) = delete;
+    BoundServer& operator=(BoundServer&& rhs) = delete;
 
     int get_readiness() const override;
+    Socket get_first_remote_socket() const;
+    Socket get_last_remote_socket() const;
+    ConstIterator cbegin() const;
+    ConstIterator cend() const;
+
+    bool is_listening() const;
     bool is_new_connection_ready() const;
 
-    //todo:: iterator getter
+    //todo:: support socket options
+    Error open_local_handle(const char* hostname, const char* service, int connection_queue_size, Protocol protocol);
+    Error close_local_handle();
 
     Socket accept_new_connection(int select_flags);
-    void remove_connection(Socket handle);
 
-    SendReceiveResult receive(Socket origin_handle, char* out_buffer, BufferSize buffer_size, int flags);
+    //fixme:: implement Internal::shutdown, etc. and call here
+    Error close_connection(Socket handle);
+    Error remove_remote_handle(Socket handle);
+
+
     SendReceiveResult send(Socket destination_handle, const char* buffer, BufferSize buffer_size, int flags);
     SendReceiveResult relay(Socket origin_handle, const char* buffer, BufferSize buffer_size, int flags);
+    SendReceiveResult receive(Socket origin_handle, char* out_buffer, BufferSize buffer_size, int flags);
 };
 
 }

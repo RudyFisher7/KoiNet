@@ -27,7 +27,7 @@ SOFTWARE.
 #define KOI_NETWORK_TCP_CLIENT_HPP
 
 
-#include "network/peer.hpp"
+#include "network/i_peer.hpp"
 
 #include "network/typedefs.hpp"
 #include "network/enums.hpp"
@@ -35,27 +35,48 @@ SOFTWARE.
 
 namespace Koi { namespace Network {
 
-class TcpClient : public Peer {
+class BoundClient : public IPeer {
 protected:
+    bool _is_connected = false;
+    bool _is_opened = false;
+    Socket _handle = INVALID_SOCKET;
     AddressInfo* peer_address_info = nullptr;
 
 public:
+    BoundClient() = default;
     //todo:: support socket options
-    TcpClient(const char* hostname, const char* service, int select_flags);
+    BoundClient(const char* hostname, const char* service, int select_flags, Protocol protocol);
 
-    TcpClient(const TcpClient& rhs) = delete;
-    TcpClient(TcpClient&& rhs) = delete;
+    BoundClient(const BoundClient& rhs) = delete;
+    BoundClient(BoundClient&& rhs) = delete;
 
-    ~TcpClient();
 
-    TcpClient& operator=(const TcpClient& rhs) = delete;
-    TcpClient& operator=(TcpClient&& rhs) = delete;
+    /**
+     * @brief Destroys the server object, cleans up its memory, and attempts to
+     * close its socket handle.
+     * @see NOTES of https://www.man7.org/linux/man-pages/man2/close.2.html
+     * @warning This destructor does not retry close()-ing the socket handle.
+     * If the particular system requires a retry on NETWORK_ERROR_INTERRUPTED,
+     * close_handle() can be used to ensure closure before destruction.
+     */
+    ~BoundClient();
+
+    BoundClient& operator=(const BoundClient& rhs) = delete;
+    BoundClient& operator=(BoundClient&& rhs) = delete;
 
 
     int get_readiness() const override;
 
+    bool is_connected() const;
 
+    //todo:: support socket options
+    Error open_handle(const char* hostname, const char* service, int select_flags, Protocol protocol);
+    Error close_handle();
     Error connect();
+
+
+    //todo:: implement Internal::shutdown, etc. and call here
+    Error disconnect();
 
 
     SendReceiveResult send(const char* buffer, BufferSize buffer_size, int flags);

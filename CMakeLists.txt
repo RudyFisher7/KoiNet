@@ -5,6 +5,9 @@ set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 
+#todo:: versioning, implement version getter function
+
+
 message(STATUS "Configured for compiler ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "Configured for compiler architecture ${CMAKE_CXX_COMPILER_ARCHITECTURE_ID}")
 message(STATUS "Configured for compiler abi ${CMAKE_CXX_COMPILER_ABI}")
@@ -17,9 +20,9 @@ set(SOURCES
     source/interface.cpp
     source/os/common/internal.cpp
     source/manager.cpp
-    source/peer.cpp
-    source/tcp_client.cpp
-    source/tcp_server.cpp
+    source/i_peer.cpp
+    source/bound_client.cpp
+    source/bound_server.cpp
     source/log/log.cpp
 )
 
@@ -30,9 +33,9 @@ set(HEADERS
     include/network/enums.hpp
     include/network/interface.hpp
     include/network/manager.hpp
-    include/network/peer.hpp
-    include/network/tcp_client.hpp
-    include/network/tcp_server.hpp
+    include/network/i_peer.hpp
+    include/network/bound_client.hpp
+    include/network/bound_server.hpp
     include/network/log/log.hpp
 )
 

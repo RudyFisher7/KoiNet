@@ -52,7 +52,7 @@ public:
     static AddressInfo get_clean_address_info();
 
 
-    static int get_address_info(
+    static Error get_address_info(
             const char* hostname,
             const char* port,
             AddressInfo* hints,
@@ -60,7 +60,7 @@ public:
     );
 
 
-    static int get_name_info(
+    static Error get_name_info(
             const SocketAddress* socket_address,
             SocketAddressSize socket_length,
             char* out_host,
@@ -86,14 +86,14 @@ public:
     );
 
 
-    static int bind_locally(
+    static Error bind_locally(
             Socket handle,
             SocketAddress* address,
             SocketAddressSize address_length
     );
 
 
-    static int bind_remotely(
+    static Error bind_remotely(
             Socket handle,
             SocketAddress* address,
             SocketAddressSize address_length
@@ -170,6 +170,12 @@ public:
     static bool is_socket_valid(Socket socket_handle);
 
 
+    /**
+     * @brief
+     * @param handle
+     * @see NOTES of https://www.man7.org/linux/man-pages/man2/close.2.html
+     * @return
+     */
     static int close_handle(Socket handle);
 
 

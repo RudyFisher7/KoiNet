@@ -26,21 +26,34 @@ SOFTWARE.
 #ifndef KOI_NETWORK_ENUMS_HPP
 #define KOI_NETWORK_ENUMS_HPP
 
+
 namespace Koi { namespace Network {
 
+
+enum Protocol: int {
+    NETWORK_PROTOCOL_STREAM,
+    NETWORK_PROTOCOL_DATAGRAM,
+};
+
+/**
+ * @brief Enumerates flags for setting a socket handle into a SocketSet for
+ * selection. These values can be bitwise OR-ed.
+ */
 enum SelectFlag: int {
     NETWORK_SELECT_FLAG_NONE = 0,
     NETWORK_SELECT_FLAG_READ = 1 << 0,
     NETWORK_SELECT_FLAG_WRITE = 1 << 1,
     NETWORK_SELECT_FLAG_EXCEPTION = 1 << 2,
-    NETWORK_SELECT_FLAG_ALL = (
+    NETWORK_SELECT_FLAG_ALL_SETS = (
             NETWORK_SELECT_FLAG_READ
             | NETWORK_SELECT_FLAG_WRITE
             | NETWORK_SELECT_FLAG_EXCEPTION
-    )
+    ),
+    NETWORK_SELECT_FLAG_ACCEPT_CONNECTION = 1 << 3,
+    NETWORK_SELECT_FLAG_ALL = 0xffff,
 };
 
-
+//fixme:: maybe just set these values directly to OS's macros for better explicitness
 /**
  * @brief Unified error codes.
  * @remarks Can be used to programmatically handle errors in a cross-platform

@@ -31,8 +31,7 @@ SOFTWARE.
 #include <ostream>
 
 
-namespace Koi {
-namespace Network {
+namespace Koi { namespace Network {
 
 AddressInfo Internal::get_clean_address_info() {
     AddressInfo result {};
@@ -41,13 +40,13 @@ AddressInfo Internal::get_clean_address_info() {
 }
 
 
-int Internal::get_address_info(
+Error Internal::get_address_info(
         const char* hostname,
         const char* port,
         AddressInfo* hints,
         AddressInfo** out_result
 ) {
-    int result = 0;
+    Error result = NETWORK_ERROR_OK;
 
     int error = getaddrinfo(
             hostname,
@@ -64,7 +63,7 @@ int Internal::get_address_info(
 }
 
 
-int Internal::get_name_info(
+Error Internal::get_name_info(
         const SocketAddress* socket_address,
         SocketAddressSize socket_length,
         char* out_host,
@@ -73,7 +72,7 @@ int Internal::get_name_info(
         SocketAddressSize service_length,
         int flags
 ) {
-    int result = 0;
+    Error result = NETWORK_ERROR_OK;
 
     int error = getnameinfo(
             socket_address,
@@ -137,12 +136,12 @@ int Internal::set_handle_option(
 }
 
 
-int Internal::bind_locally(
+Error Internal::bind_locally(
         Socket handle,
         SocketAddress* address,
         SocketAddressSize address_length
 ) {
-    int result = 0;
+    Error result = NETWORK_ERROR_OK;
 
     int error = bind(handle, address, address_length);
 
@@ -154,12 +153,12 @@ int Internal::bind_locally(
 }
 
 
-int Internal::bind_remotely(
+Error Internal::bind_remotely(
         Socket handle,
         SocketAddress* address,
         SocketAddressSize address_length
 ) {
-    int result = 0;
+    Error result = NETWORK_ERROR_OK;
 
     int error = connect(handle, address, address_length);
 

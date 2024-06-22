@@ -24,7 +24,7 @@ SOFTWARE.
 
 
 #include <network/manager.hpp>
-#include <network/tcp_server.hpp>
+#include <network/bound_server.hpp>
 #include <network/enums.hpp>
 
 
@@ -32,7 +32,7 @@ int main() {
     bool is_running = true;
     Koi::Network::Manager::get_singleton().startup();
 
-    Koi::Network::TcpServer server("::1", "8080", 10);
+    Koi::Network::BoundServer server("::1", "8080", 10, Koi::Network::NETWORK_PROTOCOL_STREAM);
 
     Koi::Network::TimeValue timeout { 0, 10000 };
     while(is_running) {

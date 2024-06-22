@@ -69,6 +69,7 @@ public:
 
 #define KOI_NET_LOG(message)
 #define KOI_NET_ASSERT(condition, message)
+#define KOI_NET_GET_FILE_AND_LINE_INFO(condition)
 
 #endif
 

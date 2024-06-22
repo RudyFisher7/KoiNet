@@ -23,32 +23,10 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_PEER_HPP
-#define KOI_NETWORK_PEER_HPP
-
-
-#include "network/typedefs.hpp"
-#include "network/enums.hpp"
+#include "../include/network/i_peer.hpp"
 
 
 namespace Koi { namespace Network {
 
-class Peer {
-public:
-    //
-
-protected:
-    Socket _handle = INVALID_SOCKET;
-
-public:
-    Peer() = default;
-
-    virtual ~Peer() = default;
-    virtual int get_readiness() const = 0;
-};
-
 }
 }
-
-
-#endif //KOI_NETWORK_PEER_HPP
