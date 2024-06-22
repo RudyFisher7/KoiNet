@@ -65,6 +65,11 @@ int BoundServer::get_readiness() const {
 }
 
 
+Socket BoundServer::get_local_handle() const {
+    return _local_handle;
+}
+
+
 Socket BoundServer::get_first_remote_socket() const {
     return *_remote_handles.cbegin();
 }

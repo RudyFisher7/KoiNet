@@ -47,6 +47,11 @@ int BoundClient::get_readiness() const {
 }
 
 
+Socket BoundClient::get_handle() const {
+    return _handle;
+}
+
+
 bool BoundClient::is_connected() const {
     return _is_connected;
 }
@@ -87,6 +92,13 @@ Error BoundClient::open_handle(const char* hostname, const char* service, int se
     }
 
     if (was_successful) {
+        int option = 0;
+        operation_result = Internal::set_handle_option(_handle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&option, sizeof(option));
+        was_successful = operation_result == 0;
+        KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+    }
+
+    if (was_successful) {
         Manager::get_singleton().add_handle_for(_handle, select_flags);
     }
 
@@ -119,6 +131,7 @@ Error BoundClient::close_handle() {
         close_result = Internal::close_handle(_handle);
         KOI_NET_ASSERT(close_result == 0, Internal::print_last_error_string);
         _is_opened = false;
+        _is_connected = false;
     }
 
     if (close_result != 0) {
@@ -137,6 +150,7 @@ Error BoundClient::connect() {
     Error result = NETWORK_ERROR_NOT_A_SOCKET;
     bool can_connect = (
             _handle != INVALID_SOCKET
+            && _is_opened
             && peer_address_info != nullptr
             && !_is_connected
     );

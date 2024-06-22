@@ -126,6 +126,7 @@ public:
     );
 
 
+    //fixme:: requires c-type cast
     static SendReceiveResult send_to(
             Socket handle,
             const char* buffer,
@@ -136,6 +137,7 @@ public:
     );
 
 
+    //fixme:: requires c-type cast
     static SendReceiveResult receive_from(
             Socket handle,
             char* buffer,

@@ -1,11 +1,8 @@
-cmake_minimum_required(VERSION 3.27)
-project(KoiNet)
+cmake_minimum_required(VERSION 3.13)
+project(KoiNet VERSION 0.1.0)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
-
-#todo:: versioning, implement version getter function
 
 
 message(STATUS "Configured for compiler ${CMAKE_CXX_COMPILER_ID}")
@@ -17,16 +14,20 @@ message(STATUS "Configured for system ${CMAKE_SYSTEM_NAME}")
 set(LIBS "")
 
 set(SOURCES
+    source/log/log.cpp
     source/interface.cpp
     source/os/common/internal.cpp
     source/manager.cpp
     source/i_peer.cpp
+    source/i_boundless_peer.cpp
     source/bound_client.cpp
     source/bound_server.cpp
-    source/log/log.cpp
+    source/boundless_client.cpp
+    source/boundless_server.cpp
 )
 
 set(HEADERS
+    include/network/log/log.hpp
     include/network/os/system_includes.hpp
     include/network/os/internal.hpp
     include/network/typedefs.hpp
@@ -34,9 +35,11 @@ set(HEADERS
     include/network/interface.hpp
     include/network/manager.hpp
     include/network/i_peer.hpp
+    include/network/i_boundless_peer.hpp
     include/network/bound_client.hpp
     include/network/bound_server.hpp
-    include/network/log/log.hpp
+    include/network/boundless_client.hpp
+    include/network/boundless_server.hpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
@@ -48,12 +51,10 @@ if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
     list(APPEND SOURCES
         source/os/windows/internal.cpp
     )
-elseif (${CMAKE_SYSTEM_NAME} STREQUAL "Linux")#fixme:: allow other platforms
+else ()
     list(APPEND SOURCES
         source/os/unix/internal.cpp
     )
-else ()
-    message(FATAL_ERROR "System ${CMAKE_SYSTEM_NAME} is not supported!")
 endif ()
 
 message(STATUS "LIBS: ${LIBS}")

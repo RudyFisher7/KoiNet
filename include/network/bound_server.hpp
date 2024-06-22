@@ -41,11 +41,12 @@ class BoundServer : public IPeer {
 public:
     typedef std::set<Socket>::const_iterator ConstIterator;
 
+
 protected:
+    bool _is_listening = false;
     Socket _local_handle = INVALID_SOCKET;
     std::set<Socket> _remote_handles;
 
-    bool _is_listening = false;
 
 public:
     BoundServer() = default;
@@ -56,12 +57,18 @@ public:
     BoundServer(BoundServer&& rhs) = delete;
 
     /**
-     * @brief Destroys the server object, cleans up its memory, and attempts to
-     * close any socket handles.
+     * @brief Destroys the object, cleans up its memory, and attempts to
+     * close its socket handle(s).
+     * @remarks If no errors were reported by the OS, this object's underlying
+     * handle(s) will be invalidated or cleared.
+     * If an error did occur during closure, the handle(s) will be left alone
+     * in case a retry is needed (see warning below).
      * @see NOTES of https://www.man7.org/linux/man-pages/man2/close.2.html
-     * @warning This destructor does not retry close()-ing the socket handles.
+     * @warning This destructor does not retry closing the socket handle.
      * If the particular system requires a retry on NETWORK_ERROR_INTERRUPTED,
      * close_handle() can be used to ensure closure before destruction.
+     * This behavior is subject to change once POSIX standard enforces a unified
+     * behavior across all systems.
      */
     ~BoundServer();
 
@@ -69,6 +76,7 @@ public:
     BoundServer& operator=(BoundServer&& rhs) = delete;
 
     int get_readiness() const override;
+    Socket get_local_handle() const;
     Socket get_first_remote_socket() const;
     Socket get_last_remote_socket() const;
     ConstIterator cbegin() const;
@@ -79,11 +87,41 @@ public:
 
     //todo:: support socket options
     Error open_local_handle(const char* hostname, const char* service, int connection_queue_size, Protocol protocol);
+
+
+    /**
+     * @brief Attempts to close this object's local socket handle.
+     * @remarks If no errors were reported by the OS, the handle will be cleared
+     * from this object.
+     * If an error did occur during closure, the local handle will be left alone
+     * in case a retry is needed (see warning below).
+     * @see NOTES of https://www.man7.org/linux/man-pages/man2/close.2.html
+     * @warning This function does not retry closing the socket handle.
+     * If the particular system requires a retry on NETWORK_ERROR_INTERRUPTED,
+     * This behavior is subject to change once POSIX standard enforces a unified
+     * behavior across all systems.
+     * @return NETWORK_ERROR_OK on if no error was raised by the OS, otherwise,
+     * a relevant NETWORK_ERROR_* enum value.
+     */
     Error close_local_handle();
 
     Socket accept_new_connection(int select_flags);
 
     //fixme:: implement Internal::shutdown, etc. and call here
+    /**
+     * @brief Attempts to close a remote socket handle.
+     * @remarks If no errors were reported by the OS, the handle will be cleared
+     * from this object.
+     * If an error did occur during closure, the handle will be left alone
+     * in case a retry is needed (see warning below).
+     * @see NOTES of https://www.man7.org/linux/man-pages/man2/close.2.html
+     * @warning This function does not retry closing the socket handle.
+     * If the particular system requires a retry on NETWORK_ERROR_INTERRUPTED,
+     * This behavior is subject to change once POSIX standard enforces a unified
+     * behavior across all systems.
+     * @return NETWORK_ERROR_OK on if no error was raised by the OS, otherwise,
+     * a relevant NETWORK_ERROR_* enum value.
+     */
     Error close_connection(Socket handle);
     Error remove_remote_handle(Socket handle);
 
