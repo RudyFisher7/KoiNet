@@ -55,7 +55,7 @@ Error IBoundlessPeer::close_handle() {
 
     if (_handle != INVALID_SOCKET) {
         close_result = Internal::close_handle(_handle);
-        KOI_NET_ASSERT(close_result == 0, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(close_result == 0, Internal::print_last_error_string);
         _is_opened = false;
     }
 
@@ -90,7 +90,7 @@ SendReceiveResult IBoundlessPeer::send_to(
             address_size
     );
 
-    KOI_NET_ASSERT(result != SOCKET_ERROR, Internal::print_last_error_string);
+    KOI_NET_LOG_IF_NOT(result != SOCKET_ERROR, Internal::print_last_error_string);
 
     return result;
 }
@@ -116,7 +116,7 @@ SendReceiveResult IBoundlessPeer::receive_from(
     );
 
 
-    KOI_NET_ASSERT(result != SOCKET_ERROR, Internal::print_last_error_string);
+    KOI_NET_LOG_IF_NOT(result != SOCKET_ERROR, Internal::print_last_error_string);
 
     return result;
 }

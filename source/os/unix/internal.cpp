@@ -34,6 +34,8 @@ SOFTWARE.
 #include <sys/socket.h>
 #include <sys/types.h>
 
+#include <cstring>
+
 
 namespace Koi { namespace Network {
 
@@ -72,11 +74,179 @@ int Internal::get_interfaces(std::vector<Interface>& out_interfaces) {
 }
 
 
-void Internal::startup() {
+Error Internal::startup() {
+    Error result = NETWORK_ERROR_OK;
+    return result;
 }
 
 
-void Internal::cleanup() {
+Error Internal::cleanup() {
+    Error result = NETWORK_ERROR_OK;
+    return result;
+}
+
+
+Error Internal::get_name_info(
+        const SocketAddress* socket_address,
+        SocketAddressSize socket_length,
+        char* out_host,
+        SocketAddressSize max_host_length,
+        char* out_service,
+        SocketAddressSize service_length,
+        int flags
+) {
+    Error result = NETWORK_ERROR_OK;
+
+    int error = getnameinfo(
+            socket_address,
+            socket_length,
+            out_host,
+            max_host_length,
+            out_service,
+            service_length,
+            flags
+    );
+
+    if (error != 0) {
+        result = convert_system_error(error);
+    }
+
+    return result;
+}
+
+
+int Internal::set_handle_option(
+        Socket handle,
+        int level,
+        int option_name,
+        const char* option_value,
+        SocketAddressSize option_length
+) {
+    int result = 0;
+
+    result = setsockopt(
+            handle,
+            level,
+            option_name,
+            option_value,
+            option_length
+    );
+
+    return result;
+}
+
+
+Error Internal::bind_locally(
+        Socket handle,
+        SocketAddress* address,
+        SocketAddressSize address_length
+) {
+    Error result = NETWORK_ERROR_OK;
+
+    int error = bind(handle, address, address_length);
+
+    if (error != 0) {
+        result = get_last_error();
+    }
+
+    return result;
+}
+
+
+Error Internal::bind_remotely(
+        Socket handle,
+        SocketAddress* address,
+        SocketAddressSize address_length
+) {
+    Error result = NETWORK_ERROR_OK;
+
+    int error = connect(handle, address, address_length);
+
+    if (error != 0) {
+        result = get_last_error();
+    }
+
+    return result;
+}
+
+
+Socket Internal::accept_on_handle(
+        Socket handle,
+        SocketAddress* address,
+        SocketAddressSize* address_size
+) {
+    return accept(
+            handle,
+            address,
+            address_size
+    );
+}
+
+
+SendReceiveResult Internal::send_to(
+        Socket handle,
+        const char* buffer,
+        BufferSize buffer_size,
+        int flags,
+        const SocketAddress* destination_address,
+        SocketAddressSize destination_address_size
+) {
+    SendReceiveResult result = 0;
+
+    result = sendto(
+            handle,
+            buffer,
+            buffer_size,
+            flags,
+            destination_address,
+            destination_address_size
+    );
+
+    return result;
+}
+
+
+SendReceiveResult Internal::receive_from(
+        Socket handle,
+        char* buffer,
+        BufferSize buffer_size,
+        int flags,
+        SocketAddress* origin_address,
+        SocketAddressSize* origin_address_size
+) {
+    SendReceiveResult result = 0;
+
+    result = recvfrom(
+            handle,
+            buffer,
+            buffer_size,
+            flags,
+            origin_address,
+            origin_address_size
+    );
+
+    return result;
+}
+
+
+int Internal::select_handles(
+        Socket number_of_handles,
+        SocketSet* read_handles,
+        SocketSet* write_handles,
+        SocketSet* exception_handles,
+        TimeValue* timeout
+) {
+    int result = 0;
+
+    result = select(
+            number_of_handles,
+            read_handles,
+            write_handles,
+            exception_handles,
+            timeout
+    );
+
+    return result;
 }
 
 
@@ -100,6 +270,11 @@ int Internal::close_handle(Socket handle) {
 
 Error Internal::get_last_error() {
     return convert_system_error(errno);
+}
+
+
+void Internal::print_last_error_string() {
+    std::cout << strerror(errno) << std::endl;
 }
 
 

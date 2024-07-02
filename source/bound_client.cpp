@@ -83,19 +83,19 @@ Error BoundClient::open_handle(const char* hostname, const char* service, int se
 
     result = Internal::get_address_info(hostname, service, &hints, &peer_address_info);
     was_successful = result == NETWORK_ERROR_OK;
-    KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+    KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
 
     if (was_successful) {
         _handle = Internal::create_handle(*peer_address_info);
         was_successful = _handle != INVALID_SOCKET;
-        KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
     }
 
     if (was_successful) {
         int option = 0;
         operation_result = Internal::set_handle_option(_handle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&option, sizeof(option));
         was_successful = operation_result == 0;
-        KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
     }
 
     if (was_successful) {
@@ -104,7 +104,7 @@ Error BoundClient::open_handle(const char* hostname, const char* service, int se
 
     if (!was_successful && _handle != INVALID_SOCKET) {
         operation_result = Internal::close_handle(_handle);
-        KOI_NET_ASSERT(operation_result == 0, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(operation_result == 0, Internal::print_last_error_string);
     }
 
     if (!was_successful) {
@@ -129,7 +129,7 @@ Error BoundClient::close_handle() {
 
     if (_handle != INVALID_SOCKET) {
         close_result = Internal::close_handle(_handle);
-        KOI_NET_ASSERT(close_result == 0, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(close_result == 0, Internal::print_last_error_string);
         _is_opened = false;
         _is_connected = false;
     }
@@ -157,7 +157,7 @@ Error BoundClient::connect() {
 
     if (can_connect) {
         result = Internal::bind_remotely(_handle, peer_address_info->ai_addr, peer_address_info->ai_addrlen);
-        KOI_NET_ASSERT(result == NETWORK_ERROR_OK, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(result == NETWORK_ERROR_OK, Internal::print_last_error_string);
     }
 
     if (result == NETWORK_ERROR_OK) {
@@ -184,7 +184,7 @@ SendReceiveResult BoundClient::send(const char* buffer, BufferSize buffer_size, 
             flags
     );
 
-    KOI_NET_ASSERT(result != SOCKET_ERROR, Internal::print_last_error_string);
+    KOI_NET_LOG_IF_NOT(result != SOCKET_ERROR, Internal::print_last_error_string);
 
     return result;
 }
@@ -194,7 +194,7 @@ SendReceiveResult BoundClient::receive(char* out_buffer, BufferSize buffer_size,
     SendReceiveResult result = -1;
 
     result = Internal::receive_over_bound_handle(_handle, out_buffer, buffer_size, flags);
-    KOI_NET_ASSERT(result != SOCKET_ERROR, Internal::print_last_error_string);
+    KOI_NET_LOG_IF_NOT(result != SOCKET_ERROR, Internal::print_last_error_string);
 
     return result;
 }

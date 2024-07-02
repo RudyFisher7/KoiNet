@@ -2,10 +2,15 @@
 A simple portable C++ networking library designed for video games.
 
 # Project Status
-Very WIP.
+1. Very early in development.
+2. Only static linking is currently supported.
 
 # Compatability
-Any system with Unix socket API or WinSock2 API, and >= C++11 should work.
+Any system with Unix socket API or WinSock2 API and >= C++11 should work.
+
+## How to Build
+For CMake (>=v3.13), add add_subdirectory(<path-to-koinet-subdir>) to your CMakeLists.txt and link to the KoiNet library.
+
 ## Tested Compilers
 1. GNU gcc (with WSL)
 2. MSVC
@@ -24,6 +29,7 @@ This is an exercise to better learn best practices with low-level network progra
 7. Use C++ compliant with standard.
 8. Keep binary size small.
 9. No warnings if possible.
+10. Minimize the amount of jank user needs to deal with.
 
 # Inspiration
 *Koi are both pleasing to the eye and resilient.*

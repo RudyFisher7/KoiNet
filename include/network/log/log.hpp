@@ -36,17 +36,21 @@ SOFTWARE.
 
 
 #define KOI_NET_LOG(message) Koi::Network::Logger::_koi_net_log(message);\
-    KOI_NET_GET_FILE_AND_LINE_INFO(true)
+    KOI_NET_FILE_AND_LINE_INFO
 
 
-#define KOI_NET_ASSERT(condition, arg) Koi::Network::Logger::_koi_net_assert(condition, arg);\
-    KOI_NET_GET_FILE_AND_LINE_INFO(condition)
-
-
-#define KOI_NET_GET_FILE_AND_LINE_INFO(condition)\
+#define KOI_NET_LOG_IF_NOT(condition, arg) Koi::Network::Logger::_koi_net_log_if_not(condition, arg);\
     if (!(condition)) {\
-        std::cout << "\t\t\t" << __FILE__ << ":" << __LINE__ << std::endl;\
+        std::cout << KOI_NET_CONDITION_STRING((condition)) << " is false.\n";\
+        KOI_NET_FILE_AND_LINE_INFO\
     }
+
+
+#define KOI_NET_CONDITION_STRING(condition) #condition
+
+
+#define KOI_NET_FILE_AND_LINE_INFO\
+    std::cout << "\t\t\t" << __FILE__ << ":" << __LINE__ << std::endl;\
 
 
 namespace Koi { namespace Network {
@@ -58,8 +62,8 @@ private:
 
 public:
     static void _koi_net_log(const std::string& message);
-    static void _koi_net_assert(bool condition, const std::string& message);
-    static void _koi_net_assert(bool condition, void(*callback)());
+    static void _koi_net_log_if_not(bool condition, const std::string& message);
+    static void _koi_net_log_if_not(bool condition, void(*callback)());
 };
 
 }

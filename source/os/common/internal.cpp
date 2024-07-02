@@ -25,8 +25,6 @@ SOFTWARE.
 
 #include "../../../include/network/os/internal.hpp"
 
-#include "../../../include/network/log/log.hpp"
-
 #include <cstring>
 #include <ostream>
 
@@ -63,35 +61,6 @@ Error Internal::get_address_info(
 }
 
 
-Error Internal::get_name_info(
-        const SocketAddress* socket_address,
-        SocketAddressSize socket_length,
-        char* out_host,
-        SocketAddressSize max_host_length,
-        char* out_service,
-        SocketAddressSize service_length,
-        int flags
-) {
-    Error result = NETWORK_ERROR_OK;
-
-    int error = getnameinfo(
-            socket_address,
-            socket_length,
-            out_host,
-            max_host_length,
-            out_service,
-            service_length,
-            flags
-    );
-
-    if (error != 0) {
-        result = convert_system_error(error);
-    }
-
-    return result;
-}
-
-
 void Internal::free_address_info(AddressInfo* address) {
     if (address == nullptr) {
         return;
@@ -115,81 +84,12 @@ Socket Internal::create_handle(AddressInfo& in_address_info) {
 }
 
 
-int Internal::set_handle_option(
-        Socket handle,
-        int level,
-        int option_name,
-        const char* option_value,
-        SocketAddressSize option_length
-) {
-    int result = 0;
-
-    result = setsockopt(
-            handle,
-            level,
-            option_name,
-            option_value,
-            option_length
-    );
-
-    return result;
-}
-
-
-Error Internal::bind_locally(
-        Socket handle,
-        SocketAddress* address,
-        SocketAddressSize address_length
-) {
-    Error result = NETWORK_ERROR_OK;
-
-    int error = bind(handle, address, address_length);
-
-    if (error != 0) {
-        result = get_last_error();
-    }
-
-    return result;
-}
-
-
-Error Internal::bind_remotely(
-        Socket handle,
-        SocketAddress* address,
-        SocketAddressSize address_length
-) {
-    Error result = NETWORK_ERROR_OK;
-
-    int error = connect(handle, address, address_length);
-
-    if (error != 0) {
-        result = get_last_error();
-    }
-
-    return result;
-}
-
-
 int Internal::listen_on_handle(Socket handle, int queue_size) {
     int result = 0;
 
     result = listen(handle, queue_size);
 
     return result;
-}
-
-
-Socket Internal::accept_on_handle(
-        Socket handle,
-        SocketAddress* address,
-        SocketAddressSize* address_size
-) {
-
-    return accept(
-            handle,
-            address,
-            address_size
-    );
 }
 
 
@@ -221,52 +121,6 @@ SendReceiveResult Internal::receive_over_bound_handle(
 }
 
 
-SendReceiveResult Internal::send_to(
-        Socket handle,
-        const char* buffer,
-        BufferSize buffer_size,
-        int flags,
-        const SocketAddress* destination_address,
-        SocketAddressSize destination_address_size
-) {
-    SendReceiveResult result = 0;
-
-    result = sendto(
-            handle,
-            buffer,
-            buffer_size,
-            flags,
-            destination_address,
-            destination_address_size
-    );
-
-    return result;
-}
-
-
-SendReceiveResult Internal::receive_from(
-        Socket handle,
-        char* buffer,
-        BufferSize buffer_size,
-        int flags,
-        SocketAddress* origin_address,
-        SocketAddressSize* origin_address_size
-) {
-    SendReceiveResult result = 0;
-
-    result = recvfrom(
-            handle,
-            buffer,
-            buffer_size,
-            flags,
-            origin_address,
-            origin_address_size
-    );
-
-    return result;
-}
-
-
 void Internal::clean_socket_set(SocketSet* set) {
     FD_ZERO(set);
 }
@@ -284,57 +138,6 @@ void Internal::clear_socket_from_set(Socket handle, SocketSet* set) {
 
 bool Internal::is_socket_ready_in_set(Socket handle, SocketSet* set) {
     return FD_ISSET(handle, set);
-}
-
-
-int Internal::select_handles(
-        Socket number_of_handles,
-        SocketSet* read_handles,
-        SocketSet* write_handles,
-        SocketSet* exception_handles,
-        TimeValue* timeout
-) {
-    int result = 0;
-
-    result = select(
-#if defined(_WIN32)
-            static_cast<int>(number_of_handles),
-#else
-            number_of_handles,
-#endif
-            read_handles,
-            write_handles,
-            exception_handles,
-            timeout
-    );
-
-    return result;
-}
-
-
-void Internal::print_last_error_string() {
-#if defined(_WIN32)
-    char result[256];
-
-    FormatMessage(
-            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-            nullptr,
-            WSAGetLastError(),
-            0,
-            result,
-            256,
-            nullptr
-    );
-
-    char* newline = strrchr(result, '\n');
-    if (newline != nullptr) {
-        *newline = 0;
-    }
-
-    std::cout << result << std::endl;
-#else
-    std::cout << strerror(errno) << std::endl;
-#endif
 }
 
 }

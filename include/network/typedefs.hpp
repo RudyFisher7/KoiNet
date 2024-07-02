@@ -34,18 +34,19 @@ namespace Koi { namespace Network {
 typedef SOCKET Socket;
 typedef int SendReceiveResult;
 typedef int BufferSize;
+typedef size_t SocketAddressSize;
 #else
 typedef int Socket;
 typedef ssize_t SendReceiveResult;
 typedef size_t BufferSize;
 constexpr const Socket INVALID_SOCKET = -1;
 constexpr const Socket SOCKET_ERROR = -1;
+typedef socklen_t SocketAddressSize;
 #endif
 
 typedef addrinfo AddressInfo;
 typedef sockaddr SocketAddress;
 typedef sockaddr_storage SocketAddressStorage;
-typedef socklen_t SocketAddressSize;
 typedef fd_set SocketSet;
 typedef timeval TimeValue;
 

@@ -40,12 +40,13 @@ namespace Koi { namespace Network {
 
 class Internal final {
 public:
-    static void startup();
+    static Error startup();
 
 
-    static void cleanup();
+    static Error cleanup();
 
 
+    //fixme:: make this function better
     static int get_interfaces(std::vector<Interface>& out_interfaces);
 
 

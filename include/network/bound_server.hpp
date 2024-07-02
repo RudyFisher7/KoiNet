@@ -45,7 +45,9 @@ public:
 protected:
     bool _is_listening = false;
     Socket _local_handle = INVALID_SOCKET;
-    std::set<Socket> _remote_handles;
+    std::set<Socket> _remote_read_handles;
+    std::set<Socket> _remote_write_handles;
+    std::set<Socket> _remote_exception_handles;
 
 
 public:
@@ -77,10 +79,21 @@ public:
 
     int get_readiness() const override;
     Socket get_local_handle() const;
-    Socket get_first_remote_socket() const;
-    Socket get_last_remote_socket() const;
-    ConstIterator cbegin() const;
-    ConstIterator cend() const;
+    Socket get_first_remote_read_socket() const;
+    Socket get_last_remote_read_socket() const;
+    Socket get_first_remote_write_socket() const;
+    Socket get_last_remote_write_socket() const;
+    Socket get_first_remote_exception_socket() const;
+    Socket get_last_remote_exception_socket() const;
+
+    ConstIterator cbegin_read() const;
+    ConstIterator cend_read() const;
+
+    ConstIterator cbegin_write() const;
+    ConstIterator cend_write() const;
+
+    ConstIterator cbegin_exception() const;
+    ConstIterator cend_exception() const;
 
     bool is_listening() const;
     bool is_new_connection_ready() const;

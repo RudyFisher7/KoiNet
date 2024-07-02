@@ -60,35 +60,35 @@ Error BoundlessServer::open_handle(const char* hostname, const char* service, in
     AddressInfo* bind_address = nullptr;
     get_address_info_result = Internal::get_address_info(hostname, service, &hints, &bind_address);
     was_successful = get_address_info_result == 0;
-    KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+    KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
 
     if (was_successful) {
         _handle = Internal::create_handle(*bind_address);
         was_successful = _handle != INVALID_SOCKET;
-        KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
     }
 
     if (was_successful) {
         int option = 0;
         operation_result = Internal::set_handle_option(_handle, IPPROTO_IPV6, IPV6_V6ONLY, (const char*)&option, sizeof(option));
         was_successful = operation_result == 0;
-        KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
     }
 
     if (was_successful) {
         result = Internal::bind_locally(_handle, bind_address->ai_addr, bind_address->ai_addrlen);
         was_successful = result == NETWORK_ERROR_OK;
-        KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
     }
 
     if (was_successful) {
         Manager::get_singleton().add_handle_for(_handle, NETWORK_SELECT_FLAG_READ);
-        KOI_NET_ASSERT(was_successful, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(was_successful, Internal::print_last_error_string);
     }
 
     if (!was_successful && _handle != INVALID_SOCKET) {
         operation_result = Internal::close_handle(_handle);
-        KOI_NET_ASSERT(operation_result == 0, Internal::print_last_error_string);
+        KOI_NET_LOG_IF_NOT(operation_result == 0, Internal::print_last_error_string);
     }
 
     if (!was_successful) {

@@ -106,27 +106,204 @@ int Internal::get_interfaces(std::vector<Interface>& out_interfaces) {
 }
 
 
-void Internal::startup() {
-    int result = 0;
+Error Internal::startup() {
+    Error result = NETWORK_ERROR_OK;
+    int error = 0;
 
     if (!_is_wsa_started) {
-        int error = WSAStartup(MAKEWORD(2, 2), &_wsa_data);
+        error = WSAStartup(MAKEWORD(2, 2), &_wsa_data);
         _is_wsa_started = error == 0;
-        result = error;
     }
 
-    //fixme:: use enum value probably
+    if (error != 0) {
+        result = convert_system_error(error);
+    }
+
+    return result;
 }
 
 
-void Internal::cleanup() {
-    int result = 0;
+Error Internal::cleanup() {
+    Error result = NETWORK_ERROR_OK;
+    int error = 0;
 
     if (_is_wsa_started) {
-        result = WSACleanup();
+        error = WSACleanup();
         _is_wsa_started = false;
     }
-    //fixme:: use enum value probably
+
+    if (error != 0) {
+        result = convert_system_error(error);
+    }
+
+    return result;
+}
+
+
+Error Internal::get_name_info(
+        const SocketAddress* socket_address,
+        SocketAddressSize socket_length,
+        char* out_host,
+        SocketAddressSize max_host_length,
+        char* out_service,
+        SocketAddressSize service_length,
+        int flags
+) {
+    Error result = NETWORK_ERROR_OK;
+
+    int error = getnameinfo(
+            socket_address,
+            static_cast<int>(socket_length),
+            out_host,
+            static_cast<DWORD>(max_host_length),
+            out_service,
+            static_cast<DWORD>(service_length),
+            flags
+    );
+
+    if (error != 0) {
+        result = convert_system_error(error);
+    }
+
+    return result;
+}
+
+
+int Internal::set_handle_option(
+        Socket handle,
+        int level,
+        int option_name,
+        const char* option_value,
+        SocketAddressSize option_length
+) {
+    int result = 0;
+
+    result = setsockopt(
+            handle,
+            level,
+            option_name,
+            option_value,
+            static_cast<int>(option_length)
+    );
+
+    return result;
+}
+
+
+Error Internal::bind_locally(
+        Socket handle,
+        SocketAddress* address,
+        SocketAddressSize address_length
+) {
+    Error result = NETWORK_ERROR_OK;
+
+    int error = bind(handle, address, static_cast<int>(address_length));
+
+    if (error != 0) {
+        result = get_last_error();
+    }
+
+    return result;
+}
+
+
+Error Internal::bind_remotely(
+        Socket handle,
+        SocketAddress* address,
+        SocketAddressSize address_length
+) {
+    Error result = NETWORK_ERROR_OK;
+
+    int error = connect(handle, address, static_cast<int>(address_length));
+
+    if (error != 0) {
+        result = get_last_error();
+    }
+
+    return result;
+}
+
+
+Socket Internal::accept_on_handle(
+        Socket handle,
+        SocketAddress* address,
+        SocketAddressSize* address_size
+) {
+    int size = static_cast<int>(*address_size);
+
+    return accept(
+            handle,
+            address,
+            &size
+    );
+}
+
+
+SendReceiveResult Internal::send_to(
+        Socket handle,
+        const char* buffer,
+        BufferSize buffer_size,
+        int flags,
+        const SocketAddress* destination_address,
+        SocketAddressSize destination_address_size
+) {
+    SendReceiveResult result = 0;
+
+    result = sendto(
+            handle,
+            buffer,
+            buffer_size,
+            flags,
+            destination_address,
+            static_cast<int>(destination_address_size)
+    );
+
+    return result;
+}
+
+
+SendReceiveResult Internal::receive_from(
+        Socket handle,
+        char* buffer,
+        BufferSize buffer_size,
+        int flags,
+        SocketAddress* origin_address,
+        SocketAddressSize* origin_address_size
+) {
+    SendReceiveResult result = 0;
+    int size = static_cast<int>(*origin_address_size);
+
+    result = recvfrom(
+            handle,
+            buffer,
+            buffer_size,
+            flags,
+            origin_address,
+            &size
+    );
+
+    return result;
+}
+
+
+int Internal::select_handles(
+        Socket number_of_handles,
+        SocketSet* read_handles,
+        SocketSet* write_handles,
+        SocketSet* exception_handles,
+        TimeValue* timeout
+) {
+    int result = 0;
+
+    result = select(
+            static_cast<int>(number_of_handles),
+            read_handles,
+            write_handles,
+            exception_handles,
+            timeout
+    );
+
+    return result;
 }
 
 
@@ -150,6 +327,28 @@ int Internal::close_handle(Socket handle) {
 
 Error Internal::get_last_error() {
     return convert_system_error(WSAGetLastError());
+}
+
+
+void Internal::print_last_error_string() {
+    char result[256];
+
+    FormatMessage(
+            FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+            nullptr,
+            WSAGetLastError(),
+            0,
+            result,
+            256,
+            nullptr
+    );
+
+    char* newline = strrchr(result, '\n');
+    if (newline != nullptr) {
+        *newline = 0;
+    }
+
+    std::cout << result << std::endl;
 }
 
 
