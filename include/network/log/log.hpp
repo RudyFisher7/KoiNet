@@ -41,7 +41,7 @@ SOFTWARE.
 
 #define KOI_NET_LOG_IF_NOT(condition, arg) Koi::Network::Logger::_koi_net_log_if_not(condition, arg);\
     if (!(condition)) {\
-        std::cout << KOI_NET_CONDITION_STRING((condition)) << " is false.\n";\
+        std::cout << "\t\t" << KOI_NET_CONDITION_STRING((condition)) << " is false.\n";\
         KOI_NET_FILE_AND_LINE_INFO\
     }
 
@@ -73,7 +73,8 @@ public:
 
 #define KOI_NET_LOG(message)
 #define KOI_NET_ASSERT(condition, message)
-#define KOI_NET_GET_FILE_AND_LINE_INFO(condition)
+#define KOI_NET_CONDITION_STRING(condition)
+#define KOI_NET_FILE_AND_LINE_INFO
 
 #endif
 

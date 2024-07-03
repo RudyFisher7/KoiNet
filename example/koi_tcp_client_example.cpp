@@ -24,14 +24,14 @@ SOFTWARE.
 
 
 #include <network/manager.hpp>
-#include <network/bound_server.hpp>
+#include <network/bound_client.hpp>
 #include <network/enums.hpp>
 
 #include <iostream>
 
 
 int main(int argc, char** argv) {
-    std::cout << "Tcp server example started." << std::endl;
+    std::cout << "Tcp client example started." << std::endl;
 
     Koi::Network::Error error = Koi::Network::NETWORK_ERROR_OK;
     bool is_running = true;
@@ -40,53 +40,48 @@ int main(int argc, char** argv) {
     std::string default_hostname = "::1";
     std::string default_port = "8080";
 
-    Koi::Network::BoundServer server;
+    Koi::Network::BoundClient client;
 
     if (argc < 3) {
-        error = server.open_local_handle(default_hostname.c_str(), default_port.c_str(), 1, Koi::Network::NETWORK_PROTOCOL_STREAM);
+        error = client.open_handle(default_hostname.c_str(), default_port.c_str(), Koi::Network::NETWORK_SELECT_FLAG_WRITE, Koi::Network::NETWORK_PROTOCOL_STREAM);
     } else {
-        error = server.open_local_handle(argv[1], argv[2], 1, Koi::Network::NETWORK_PROTOCOL_STREAM);
+        error = client.open_handle(argv[1], argv[2], Koi::Network::NETWORK_SELECT_FLAG_WRITE, Koi::Network::NETWORK_PROTOCOL_STREAM);
     }
 
     if (error != Koi::Network::NETWORK_ERROR_OK) {
         std::cout << "Unable to open local socket handle. Run with logging enabled for more info." << std::endl;
         return 1;
     } else {
-        std::cout << "Server opened." << std::endl;
+        std::cout << "Client socket handle opened." << std::endl;
     }
+
+    std::cout << "Client connecting..." << std::endl;
+    Koi::Network::Socket handle = client.connect();
+    std::cout << "Connected." << std::endl;
 
     Koi::Network::TimeValue timeout { 0, 10000 };
     while(is_running) {
         int select_result = Koi::Network::Manager::get_singleton().select_handles(&timeout);
-        if (select_result > 0) {
-            int readiness = server.get_readiness();
-
-            if (server.is_new_connection_ready()) {
-                Koi::Network::Socket remote = server.accept_new_connection(Koi::Network::NETWORK_SELECT_FLAG_READ);
-            }
-
-            if (readiness > 0) {
-                auto it = server.cbegin_read();
-                auto end = server.cend_read();
-
-                while (it != end) {
-                    if (Koi::Network::Manager::get_singleton().get_handle_readiness(*it) & Koi::Network::NETWORK_SELECT_FLAG_READ) {
-                        char buffer[1024];
-
-                        Koi::Network::SendReceiveResult result = server.receive(*it, buffer, 1024, 0);
-
-                        if (result > 0) {
-                            buffer[result] = '\0';
-                            std::cout << buffer << std::endl;
-                        } else if (result < 0) {
-                            //todo:: handle error
-                        } else { // result == 0
-                            server.remove_remote_handle(*it);//fixme:: can't do this while using iterator - perhaps queue for deletion
-                        }
-                    }
-
-                    ++it;
+        if (select_result > 0 && client.get_readiness() > 0) {
+            if (client.is_connected()) {
+                if ((client.get_readiness() & Koi::Network::NETWORK_SELECT_FLAG_READ) > 0) {
+                    //
                 }
+
+                if ((client.get_readiness() & Koi::Network::NETWORK_SELECT_FLAG_WRITE) > 0) {
+                    std::cout << "Input message." << std::endl;
+                    std::string buffer;
+                    std::getline(std::cin, buffer);
+
+                    Koi::Network::SendReceiveResult send_result = client.send(buffer.c_str(), static_cast<int>(buffer.size()), 0);
+                }
+
+                if ((client.get_readiness() & Koi::Network::NETWORK_SELECT_FLAG_EXCEPTION) > 0) {
+                    //fixme:: handle exceptions
+                }
+
+            } else {
+                Koi::Network::Socket handle = client.connect();
             }
 
         } else if (select_result < 0) {
@@ -95,6 +90,6 @@ int main(int argc, char** argv) {
     }
 
     Koi::Network::Manager::get_singleton().cleanup();
-    std::cout << "Tcp server example stopped." << std::endl;
+    std::cout << "Tcp client example stopped." << std::endl;
     return 0;
 }

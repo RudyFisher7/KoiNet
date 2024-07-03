@@ -31,7 +31,7 @@ target_link_libraries(${KOI_NET_UDP_CLIENT_EXAMPLE} PRIVATE
 set(KOI_NET_TCP_CLIENT_EXAMPLE KoiNetTcpClientExample)
 
 add_executable(${KOI_NET_TCP_CLIENT_EXAMPLE}
-    tcp_client.cpp
+    koi_tcp_client_example.cpp
 )
 
 target_link_libraries(${KOI_NET_TCP_CLIENT_EXAMPLE} PRIVATE
