@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "../include/network/boundless_server.hpp"
+#include "../include/network/unbound_server.hpp"
 
 #include "../include/network/manager.hpp"
 #include "../include/network/os/internal.hpp"
@@ -32,17 +32,17 @@ SOFTWARE.
 
 namespace Koi { namespace Network {
 
-BoundlessServer::BoundlessServer(const char* hostname, const char* service, int select_flags) {
+UnboundServer::UnboundServer(const char* hostname, const char* service, int select_flags) {
     (void)open_handle(hostname, service, select_flags);
 }
 
 
-BoundlessServer::~BoundlessServer() {
+UnboundServer::~UnboundServer() {
     (void)close_handle();
 }
 
 
-Error BoundlessServer::open_handle(const char* hostname, const char* service, int select_flags) {
+Error UnboundServer::open_handle(const char* hostname, const char* service, int select_flags) {
     Error result = NETWORK_ERROR_OK;
 
     if (_is_opened) {

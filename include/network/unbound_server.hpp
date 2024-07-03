@@ -23,11 +23,11 @@ SOFTWARE.
 */
 
 
-#ifndef KOI_NETWORK_BOUNDLESS_CLIENT_HPP
-#define KOI_NETWORK_BOUNDLESS_CLIENT_HPP
+#ifndef KOI_NETWORK_UNBOUND_SERVER_HPP
+#define KOI_NETWORK_UNBOUND_SERVER_HPP
 
 
-#include "network/i_boundless_peer.hpp"
+#include "network/i_unbound_peer.hpp"
 
 #include "network/typedefs.hpp"
 #include "network/enums.hpp"
@@ -35,13 +35,13 @@ SOFTWARE.
 
 namespace Koi { namespace Network {
 
-class BoundlessClient : public IBoundlessPeer {
+class UnboundServer : public IUnboundPeer {
 public:
-    BoundlessClient() = default;
-    BoundlessClient(const char* hostname, const char* service, int select_flags);
+    UnboundServer() = default;
+    UnboundServer(const char* hostname, const char* service, int select_flags);
 
-    BoundlessClient(const BoundlessClient& rhs) = delete;
-    BoundlessClient(BoundlessClient&& rhs) = delete;
+    UnboundServer(const UnboundServer& rhs) = delete;
+    UnboundServer(UnboundServer&& rhs) = delete;
 
 
     /**
@@ -58,17 +58,17 @@ public:
      * This behavior is subject to change once POSIX standard enforces a unified
      * behavior across all systems.
      */
-    ~BoundlessClient();
+    ~UnboundServer();
 
-    BoundlessClient& operator=(const BoundlessClient& rhs) = delete;
-    BoundlessClient& operator=(BoundlessClient&& rhs) = delete;
+    UnboundServer& operator=(const UnboundServer& rhs) = delete;
+    UnboundServer& operator=(UnboundServer&& rhs) = delete;
+
 
     //todo:: support socket options
-    Error open_handle(const char* hostname, const char* service, int select_flags) override;
+    Error open_handle(const char* hostname, const char* service, int select_flags);
 };
 
 }
 }
 
-
-#endif //KOI_NETWORK_BOUNDLESS_CLIENT_HPP
+#endif //KOI_NETWORK_UNBOUND_SERVER_HPP

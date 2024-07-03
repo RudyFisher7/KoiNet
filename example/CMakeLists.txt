@@ -20,10 +20,21 @@ message(STATUS "LIBS: ${LIBS}")
 set(KOI_NET_UDP_CLIENT_EXAMPLE KoiNetUdpClientExample)
 
 add_executable(${KOI_NET_UDP_CLIENT_EXAMPLE}
-    udp_client.cpp
+    koi_udp_client_example.cpp
 )
 
 target_link_libraries(${KOI_NET_UDP_CLIENT_EXAMPLE} PRIVATE
+    ${LIBS}
+)
+
+
+set(KOI_NET_UDP_SERVER_EXAMPLE KoiNetUdpServerExample)
+
+add_executable(${KOI_NET_UDP_SERVER_EXAMPLE}
+    koi_udp_server_example.cpp
+)
+
+target_link_libraries(${KOI_NET_UDP_SERVER_EXAMPLE} PRIVATE
     ${LIBS}
 )
 

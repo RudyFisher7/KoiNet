@@ -35,17 +35,17 @@ SOFTWARE.
 
 namespace Koi { namespace Network {
 
-class IBoundlessPeer : public IPeer {
+class IUnboundPeer : public IPeer {
 protected:
     bool _is_opened = false;
     Socket _handle = INVALID_SOCKET;
 
 
 public:
-    IBoundlessPeer() = default;
+    IUnboundPeer() = default;
 
-    IBoundlessPeer(const IBoundlessPeer& rhs) = delete;
-    IBoundlessPeer(IBoundlessPeer&& rhs) = delete;
+    IUnboundPeer(const IUnboundPeer& rhs) = delete;
+    IUnboundPeer(IUnboundPeer&& rhs) = delete;
 
 
     /**
@@ -62,10 +62,10 @@ public:
      * This behavior is subject to change once POSIX standard enforces a unified
      * behavior across all systems.
      */
-    virtual ~IBoundlessPeer();
+    virtual ~IUnboundPeer();
 
-    IBoundlessPeer& operator=(const IBoundlessPeer& rhs) = delete;
-    IBoundlessPeer& operator=(IBoundlessPeer&& rhs) = delete;
+    IUnboundPeer& operator=(const IUnboundPeer& rhs) = delete;
+    IUnboundPeer& operator=(IUnboundPeer&& rhs) = delete;
 
 
     int get_readiness() const override;

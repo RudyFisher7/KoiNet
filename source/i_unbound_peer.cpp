@@ -23,7 +23,7 @@ SOFTWARE.
 */
 
 
-#include "../include/network/i_boundless_peer.hpp"
+#include "../include/network/i_unbound_peer.hpp"
 
 #include "../include/network/manager.hpp"
 #include "../include/network/os/internal.hpp"
@@ -32,22 +32,22 @@ SOFTWARE.
 
 namespace Koi { namespace Network {
 
-IBoundlessPeer::~IBoundlessPeer() {
+IUnboundPeer::~IUnboundPeer() {
     (void)close_handle();
 }
 
 
-int IBoundlessPeer::get_readiness() const {
+int IUnboundPeer::get_readiness() const {
     return Manager::get_singleton().get_handle_readiness(_handle);
 }
 
 
-Socket IBoundlessPeer::get_handle() const {
+Socket IUnboundPeer::get_handle() const {
     return _handle;
 }
 
 
-Error IBoundlessPeer::close_handle() {
+Error IUnboundPeer::close_handle() {
     Error result = NETWORK_ERROR_OK;
     int close_result = 0;
 
@@ -71,7 +71,7 @@ Error IBoundlessPeer::close_handle() {
 }
 
 
-SendReceiveResult IBoundlessPeer::send_to(
+SendReceiveResult IUnboundPeer::send_to(
         const char* buffer,
         BufferSize buffer_size,
         int flags,
@@ -96,7 +96,7 @@ SendReceiveResult IBoundlessPeer::send_to(
 }
 
 
-SendReceiveResult IBoundlessPeer::receive_from(
+SendReceiveResult IUnboundPeer::receive_from(
         char* out_buffer,
         BufferSize buffer_size,
         int flags,

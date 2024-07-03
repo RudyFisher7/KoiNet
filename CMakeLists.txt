@@ -19,11 +19,11 @@ set(SOURCES
     source/os/common/internal.cpp
     source/manager.cpp
     source/i_peer.cpp
-    source/i_boundless_peer.cpp
+    source/i_unbound_peer.cpp
     source/bound_client.cpp
     source/bound_server.cpp
-    source/boundless_client.cpp
-    source/boundless_server.cpp
+    source/unbound_client.cpp
+    source/unbound_server.cpp
 )
 
 set(HEADERS
@@ -35,11 +35,11 @@ set(HEADERS
     include/network/interface.hpp
     include/network/manager.hpp
     include/network/i_peer.hpp
-    include/network/i_boundless_peer.hpp
+    include/network/i_unbound_peer.hpp
     include/network/bound_client.hpp
     include/network/bound_server.hpp
-    include/network/boundless_client.hpp
-    include/network/boundless_server.hpp
+    include/network/unbound_client.hpp
+    include/network/unbound_server.hpp
 )
 
 if (${CMAKE_SYSTEM_NAME} STREQUAL "Windows")
