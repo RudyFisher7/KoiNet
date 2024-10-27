@@ -1,5 +1,5 @@
 # KoiNet
-A simple portable C++ networking library designed for video games.
+A simple portable C++ networking library.
 
 # Project Status
 1. Very early in development.
